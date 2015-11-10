@@ -17,21 +17,21 @@ public:
         : m_nId(0)
         ,m_startPointCaptured(false)
         ,m_bDelta(false)
-        ,m_startPoint(CCPoint(0xffffffff, 0xffffffff))
-        ,m_point(CCPoint(0xffffffff, 0xffffffff))
-        ,m_prevPoint(CCPoint(0xffffffff, 0xffffffff))
+        ,m_startPoint(DPoint(0xffffffff, 0xffffffff))
+        ,m_point(DPoint(0xffffffff, 0xffffffff))
+        ,m_prevPoint(DPoint(0xffffffff, 0xffffffff))
     {}
 
 
-    CCPoint getLocation() const;
+    DPoint getLocation() const;
 
-    CCPoint getPreviousLocation() const;
+    DPoint getPreviousLocation() const;
 
-    CCPoint getStartLocation() const;
+    DPoint getStartLocation() const;
 
-    CCPoint getDelta() const;
+    DPoint getDelta() const;
     
-    CCPoint getDeltaFromAToZ() const;
+    DPoint getDeltaFromAToZ() const;
     
     bool isDelta() const;
     
@@ -46,13 +46,37 @@ private:
     int m_nId;
     bool m_startPointCaptured;
     bool m_bDelta;
-    CCPoint m_startPoint;
-    CCPoint m_point;
-    CCPoint m_prevPoint;
+    DPoint m_startPoint;
+    DPoint m_point;
+    DPoint m_prevPoint;
+};
+
+enum EventType
+{
+    keyboardEvent = 0,
+    leftMouseEvent,
+    rightMouseEvent,
+    middleMouseEvent,
+    movedMouseEvent,
+    iosEvent,
+    androidEvent,
 };
 
 class CC_DLL CAEvent : public CAObject
 {
+
+
+public:
+    CAEvent()
+    : m_eType(keyboardEvent)
+    {}
+    
+    EventType getEventType() { return m_eType;}
+    
+    void setEventType(EventType type) { m_eType = type;}
+protected:
+    EventType m_eType;
+
 };
 
 // end of input group

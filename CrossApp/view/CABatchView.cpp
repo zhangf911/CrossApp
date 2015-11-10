@@ -2,15 +2,15 @@
 #include "CABatchView.h"
 #include "ccConfig.h"
 #include "CAView.h"
-#include "draw_nodes/CCDrawingPrimitives.h"
+#include "view/CADrawingPrimitives.h"
 #include "images/CAImageCache.h"
-#include "support/CCPointExtension.h"
+#include "support/CAPointExtension.h"
 #include "shaders/CAShaderCache.h"
 #include "shaders/CAGLProgram.h"
 #include "shaders/ccGLStateCache.h"
 #include "basics/CAApplication.h"
 #include "support/TransformUtils.h"
-#include "support/CCProfiling.h"
+#include "support/CAProfiling.h"
 #include "kazmath/GL/matrix.h"
 
 NS_CC_BEGIN
@@ -266,7 +266,6 @@ void CABatchView::increaseAtlasCapacity(void)
 
     if (! m_pobImageAtlas->resizeCapacity(quantity))
     {
-        CCLOGWARN("CrossApp: WARNING: Not enough memory to resize the atlas");
         CCAssert(false, "Not enough memory to resize the atlas");
     }
 }
@@ -449,7 +448,7 @@ void CABatchView::removeViewFromAtlas(CAView *view)
     if (uIndex != UINT_MAX)
     {
         m_obDescendants.erase(uIndex);
-        unsigned int count = m_obDescendants.size();
+        unsigned int count = (unsigned int)m_obDescendants.size();
         
         for(; uIndex < count; ++uIndex)
         {

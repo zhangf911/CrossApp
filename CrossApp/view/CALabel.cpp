@@ -12,6 +12,8 @@
 #include <cstdlib>
 #include "CALabelStyle.h"
 #include "shaders/CAShaderCache.h"
+#include "platform/CAClipboard.h"
+#include "basics/CAApplication.h"
 
 NS_CC_BEGIN
 
@@ -22,9 +24,9 @@ CALabel::CALabel()
 ,m_nText("")
 ,m_nfontName("")
 ,m_nVerticalTextAlignmet(CAVerticalTextAlignmentTop)
-,m_nDimensions(CCSizeZero)
+,m_nDimensions(DSizeZero)
 ,m_nfontSize(24)
-,m_cLabelSize(CCSizeZero)
+,m_cLabelSize(DSizeZero)
 ,m_bUpdateImage(false)
 ,pTextHeight(0)
 ,m_bFitFlag(false)
@@ -33,9 +35,10 @@ CALabel::CALabel()
 ,m_bBold(false)
 ,m_bItalics(false)
 ,m_bUnderLine(false)
+,m_bEnableCopy(false)
+, m_cFontColor(CAColor_black)
 {
-    m_obContentSize = CCSizeZero;
-
+    m_obContentSize = DSizeZero;
 }
 
 CALabel::~CALabel()
@@ -43,7 +46,7 @@ CALabel::~CALabel()
     
 }
 
-CALabel *CALabel::createWithFrame(const CCRect& rect)
+CALabel *CALabel::createWithFrame(const DRect& rect)
 {
     CALabel *label = new CALabel();
     if (label && label->initWithFrame(rect))
@@ -55,7 +58,7 @@ CALabel *CALabel::createWithFrame(const CCRect& rect)
     return NULL;
 }
 
-CALabel* CALabel::createWithCenter(const CCRect &rect)
+CALabel* CALabel::createWithCenter(const DRect &rect)
 {
     CALabel *label = new CALabel();
     if (label && label->initWithCenter(rect))
@@ -78,7 +81,7 @@ void CALabel::onEnterTransitionDidFinish()
     }
 }
 
-bool CALabel::initWithFrame(const CCRect& rect)
+bool CALabel::initWithFrame(const DRect& rect)
 {
     if (!CAView::initWithFrame(rect,CAColor_black))
     {
@@ -87,7 +90,7 @@ bool CALabel::initWithFrame(const CCRect& rect)
     return true;
 }
 
-bool CALabel::initWithCenter(const CCRect& rect)
+bool CALabel::initWithCenter(const DRect& rect)
 {
     if (!CAView::initWithCenter(rect,CAColor_black))
     {
@@ -96,6 +99,11 @@ bool CALabel::initWithCenter(const CCRect& rect)
     return true;
 }
 
+void CALabel::updateImageDraw()
+{
+    m_bUpdateImage = true;
+    this->updateDraw();
+}
 
 void CALabel::updateImage()
 {
@@ -104,7 +112,7 @@ void CALabel::updateImage()
  
     unsigned int linenumber = (int)this->getBounds().size.height / fontHeight;
 
-    CCSize size = CCSizeZero;
+    DSize size = DSizeZero;
     if (m_bFitFlag)
     {
         float width = CAImage::getStringWidth(m_nfontName.c_str(), m_nfontSize, m_nText);
@@ -112,11 +120,11 @@ void CALabel::updateImage()
         {
             if (m_nNumberOfLine > 1)
             {
-				size = CCSize(this->getBounds().size.width, (defaultLineSpace + m_iLineSpacing + fontHeight) * m_nNumberOfLine);
+				size = DSize(this->getBounds().size.width, (defaultLineSpace + m_iLineSpacing + fontHeight) * m_nNumberOfLine);
             }
             else if (m_nNumberOfLine == 1)
             {
-				size = CCSize(width, fontHeight);
+				size = DSize(width, fontHeight);
             }
             else
             {
@@ -140,11 +148,11 @@ void CALabel::updateImage()
 		{
 			if (m_nNumberOfLine > 0)
 			{
-				size = CCSize(this->getBounds().size.width, (defaultLineSpace + m_iLineSpacing + fontHeight) * MIN(m_nNumberOfLine, linenumber));
+				size = DSize(this->getBounds().size.width, (defaultLineSpace + m_iLineSpacing + fontHeight) * MIN(m_nNumberOfLine, linenumber));
 			}
 			else
 			{
-				size = CCSize(this->getBounds().size.width, (defaultLineSpace + m_iLineSpacing + fontHeight) * linenumber);
+				size = DSize(this->getBounds().size.width, (defaultLineSpace + m_iLineSpacing + fontHeight) * linenumber);
 			}
 		}
     }
@@ -152,6 +160,7 @@ void CALabel::updateImage()
     
     
 	CAImage* image = CAImage::createWithString(m_nText.c_str(),
+											   m_cFontColor,
                                                m_nfontName.c_str(),
                                                m_nfontSize,
                                                size,
@@ -163,19 +172,17 @@ void CALabel::updateImage()
 											   m_bItalics,
 											   m_bUnderLine);
 
+    this->setImage(image);
 	CC_RETURN_IF(image == NULL);
-
     m_cLabelSize = size;
     
-    CCRect rect = CCRectZero;
+    DRect rect = DRectZero;
     rect.size.width = this->getBounds().size.width;
     rect.size.height = size.height;
     
     float width = m_bFitFlag ? image->getContentSize().width : MIN(this->getBounds().size.width, image->getContentSize().width);
     
     rect.size.width = width;
-    
-    this->setImage(image);
 
     switch (m_nVerticalTextAlignmet)
     {
@@ -197,12 +204,23 @@ void CALabel::updateImage()
 
     if (m_bFitFlag)
     {
-        this->setImageRect(rect, false, size);
+        if (!size.equals(m_obContentSize))
+        {
+            if (m_bFrame)
+            {
+                DRect rect = this->getFrame();
+                rect.size = size;
+                this->setFrame(rect);
+            }
+            else
+            {
+                DRect rect = this->getCenter();
+                rect.size = size;
+                this->setCenter(rect);
+            }
+        }
     }
-    else
-    {
-        this->setImageRect(rect);
-    }
+    this->setImageRect(rect);
 }
 
 void CALabel::updateImageRect()
@@ -212,25 +230,43 @@ void CALabel::updateImageRect()
     y1 = 0;
     y1 = m_obContentSize.height - m_obRect.size.height - y1;
     y1 = y1 - pTextHeight;
-    x2 = x1 + m_obRect.size.width;
-    y2 = y1 + m_obRect.size.height;
-    m_sQuad.bl.vertices = vertex3(x1, y1, 0);
-    m_sQuad.br.vertices = vertex3(x2, y1, 0);
-    m_sQuad.tl.vertices = vertex3(x1, y2, 0);
-    m_sQuad.tr.vertices = vertex3(x2, y2, 0);
+    x2 = x1 + m_obRect.size.width - 1;
+    x2 = MAX(x1, x2);
+    y2 = y1 + m_obRect.size.height - 1;
+    y2 = MAX(y1, y2);
+    m_sQuad.bl.vertices = vertex3(x1, y1, m_fVertexZ);
+    m_sQuad.br.vertices = vertex3(x2, y1, m_fVertexZ);
+    m_sQuad.tl.vertices = vertex3(x1, y2, m_fVertexZ);
+    m_sQuad.tr.vertices = vertex3(x2, y2, m_fVertexZ);
 }
 
-void CALabel::setDimensions(const CCSize& var)
+void CALabel::copySelectText()
+{
+	CAClipboard::setText(m_nText);
+}
+
+void CALabel::ccTouchPress(CATouch *pTouch, CAEvent *pEvent)
+{
+	if (m_bEnableCopy)
+	{
+		CATextToolBarView *pToolBar = CATextToolBarView::create();
+		pToolBar->addButton(UTF8("\u590d\u5236"), this, callfunc_selector(CALabel::copySelectText));
+		pToolBar->show();
+	}
+}
+
+
+void CALabel::setDimensions(const DSize& var)
 {
     m_nDimensions = var;
     if(m_nText.empty())
     {
         return;
     }
-    m_bUpdateImage = true;
+    this->updateImageDraw();
 }
 
-const CCSize& CALabel::getDimensions()
+const DSize& CALabel::getDimensions()
 {
     return m_nDimensions;
 }
@@ -242,7 +278,7 @@ void CALabel::sizeToFit()
     {
         return;
     }
-    m_bUpdateImage = true;
+    this->updateImageDraw();
 }
 
 void CALabel::unsizeToFit()
@@ -254,7 +290,7 @@ void CALabel::setText(const string& var)
 {
     CC_RETURN_IF(m_nText.compare(var) == 0);
     m_nText = var;
-    m_bUpdateImage = true;
+    this->updateImageDraw();
 }
 
 void CALabel::setTextAlignment(const CATextAlignment& var)
@@ -264,7 +300,7 @@ void CALabel::setTextAlignment(const CATextAlignment& var)
     {
         return;
     }
-    m_bUpdateImage = true;
+   this->updateImageDraw();
 }
 
 const CATextAlignment& CALabel::getTextAlignment()
@@ -289,7 +325,7 @@ void CALabel::setNumberOfLine(unsigned int var)
     {
         return;
     }
-    m_bUpdateImage = true;
+    this->updateImageDraw();
 }
 
 void CALabel::setFontSize(unsigned int var)
@@ -299,7 +335,7 @@ void CALabel::setFontSize(unsigned int var)
     {
         return;
     }
-    m_bUpdateImage = true;
+    this->updateImageDraw();
 }
 
 unsigned int CALabel::getFontSize()
@@ -311,7 +347,7 @@ void CALabel::setLineSpacing(int var)
 {
     CC_RETURN_IF(m_iLineSpacing == var);
 	m_iLineSpacing = var;
-	m_bUpdateImage = true;
+	this->updateImageDraw();
 }
 
 int CALabel::getLineSpacing()
@@ -322,7 +358,7 @@ int CALabel::getLineSpacing()
 void CALabel::setWordWrap(bool var)
 {
 	m_bWordWrap = var;
-	m_bUpdateImage = true;
+	this->updateImageDraw();
 }
 
 bool CALabel::getWordWrap()
@@ -333,7 +369,7 @@ bool CALabel::getWordWrap()
 void CALabel::setBold(bool var)
 {
 	m_bBold = var;
-	m_bUpdateImage = true;
+	this->updateImageDraw();
 }
 
 bool CALabel::getBold()
@@ -344,7 +380,7 @@ bool CALabel::getBold()
 void CALabel::setUnderLine(bool var)
 {
 	m_bUnderLine = var;
-	m_bUpdateImage = true;
+	this->updateImageDraw();
 }
 
 bool CALabel::getUnderLine()
@@ -355,7 +391,7 @@ bool CALabel::getUnderLine()
 void CALabel::setItalics(bool var)
 {
 	m_bItalics = var;
-	m_bUpdateImage = true;
+	this->updateImageDraw();
 }
 
 bool CALabel::getItalics()
@@ -370,7 +406,7 @@ void CALabel::setFontName(const string& var)
     {
         return;
     }
-    m_bUpdateImage = true;
+    this->updateImageDraw();
 }
 
 const std::string& CALabel::getFontName()
@@ -385,7 +421,7 @@ void CALabel::setVerticalTextAlignmet(const CAVerticalTextAlignment& var)
     {
         return;
     }
-    m_bUpdateImage = true;
+    this->updateImageDraw();
 }
 
 const CAVerticalTextAlignment& CALabel::getVerticalTextAlignmet()
@@ -393,13 +429,26 @@ const CAVerticalTextAlignment& CALabel::getVerticalTextAlignmet()
     return m_nVerticalTextAlignmet;
 }
 
-void CALabel::setContentSize(const CrossApp::CCSize &var)
+void CALabel::setContentSize(const CrossApp::DSize &var)
 {
-    CCSize originSize = getFrame().size;
+    DSize originSize = getFrame().size;
     CAView::setContentSize(var);
-    if (originSize.width != var.width || originSize.height != var.height) {
-        m_bUpdateImage = true;
+    if (originSize.width != var.width || originSize.height != var.height)
+    {
+        this->updateImageDraw();
     }
+}
+
+const CAColor4B& CALabel::getColor(void)
+{
+	return m_cFontColor;
+}
+
+void CALabel::setColor(const CAColor4B& color)
+{
+	m_cFontColor = color;
+	updateImage();
+	CAView::setColor(CAColor_white);
 }
 
 void CALabel::visit()
@@ -424,7 +473,8 @@ void CALabel::applyStyle(const CALabelStyle* pLabelStyle)
 
 	setFontName(pLabelStyle->getFontName());
 	setFontSize(pLabelStyle->getFontSize());
-	setColor(pLabelStyle->getFontColor());
+	
+//	setColor(pLabelStyle->getFontColor());
 	setLineSpacing(pLabelStyle->getLineSpace());
 	setBold(pLabelStyle->isBold());
 	setItalics(pLabelStyle->isItalics());

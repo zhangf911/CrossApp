@@ -11,12 +11,15 @@
 
 #include <iostream>
 #include "CAView.h"
+#include "view/CATextEditHelper.h"
+#include "view/CATextField.h"
+
 
 NS_CC_BEGIN
 using namespace std;
 class CALabelStyle;
 
-class CC_DLL CALabel: public CAView
+class CC_DLL CALabel : public CATouchView
 {
 public:
     
@@ -24,13 +27,13 @@ public:
     
     virtual ~CALabel();
     
-    static CALabel* createWithFrame(const CCRect& rect);
+    static CALabel* createWithFrame(const DRect& rect);
     
-    static CALabel* createWithCenter(const CCRect& rect);
+    static CALabel* createWithCenter(const DRect& rect);
     
-    virtual bool initWithFrame(const CCRect& rect);
+    virtual bool initWithFrame(const DRect& rect);
     
-    virtual bool initWithCenter(const CCRect& rect);
+    virtual bool initWithCenter(const DRect& rect);
     
     virtual void onEnterTransitionDidFinish();
     
@@ -54,35 +57,49 @@ public:
     
     CC_PROPERTY_PASS_BY_REF(CATextAlignment, m_nTextAlignment, TextAlignment);
     
-    CC_PROPERTY_PASS_BY_REF(CCSize, m_nDimensions, Dimensions);
+    CC_PROPERTY_PASS_BY_REF(DSize, m_nDimensions, Dimensions);
     
     CC_PROPERTY(unsigned int, m_nNumberOfLine, NumberOfLine);
+
+	CC_SYNTHESIZE(bool, m_bEnableCopy, EnableCopy);
     
-    CC_SYNTHESIZE_READONLY_PASS_BY_REF(CCSize, m_cLabelSize, LabelSize);
-    
+    CC_SYNTHESIZE_READONLY_PASS_BY_REF(DSize, m_cLabelSize, LabelSize);
+
     virtual void visit();
     
     void sizeToFit();
     
     void unsizeToFit();
-
+    
+    void setColor(const CAColor4B& var);
+    
+    const CAColor4B& getColor();
+    
 	void applyStyle(const string& sStyleName);
 
 	void applyStyle(const CALabelStyle* pLabelStyle);
     
-    void updateImage();
-    
 protected:
+
+    virtual void setContentSize(const DSize& var);
+
+	virtual void updateImageRect();
+
+	virtual void ccTouchPress(CATouch *pTouch, CAEvent *pEvent);
     
-    virtual void setContentSize(const CCSize& var);
+    void updateImageDraw();
     
-    virtual void updateImageRect();
-        
+    void updateImage();
+
+	void copySelectText();
+    
     bool m_bUpdateImage;
     
     float pTextHeight;
     
     bool m_bFitFlag;
+    
+    CAColor4B m_cFontColor;
 };
 
 NS_CC_END

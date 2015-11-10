@@ -16,8 +16,8 @@ NS_CC_BEGIN
 
 typedef struct
 {
-    CCRect  begin;              // the soft keyboard rectangle when animation begins
-    CCRect  end;                // the soft keyboard rectangle when animation ends
+    DRect  begin;              // the soft keyboard rectangle when animation begins
+    DRect  end;                // the soft keyboard rectangle when animation ends
     float     duration;           // the soft keyboard animation duration
 } CCIMEKeyboardNotificationInfo;
 
@@ -66,23 +66,24 @@ protected:
     
     virtual void willInsertText(const char * text, int len) {CC_UNUSED_PARAM(text);CC_UNUSED_PARAM(len);}
     
-    virtual void AndroidWillInsertText(int start,const char* str,int before,int count){CC_UNUSED_PARAM(before);};
+    virtual void AndroidWillInsertText(int start, const char* str, int before, int count){CC_UNUSED_PARAM(before);};
+    
     /**
     @brief    Called by CAIMEDispatcher after the user clicks the backward key.
     */
     virtual void deleteBackward() {}
 
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
-    virtual void deleteForward() {}
-    virtual void cursorMoveBackward(bool selected) {CC_UNUSED_PARAM(selected);}
-    virtual void cursorMoveForward(bool selected) {CC_UNUSED_PARAM(selected);}
-#endif
-#if CC_TARGET_PLATFORM == CC_PLATFORM_WIN32
-    virtual void copyToClipboard(std::string *content) {CC_UNUSED_PARAM(content);}
-    virtual void cutToClipboard(std::string *content) {CC_UNUSED_PARAM(content);}
-    virtual void pasteFromClipboard(const char *content) {CC_UNUSED_PARAM(content);}
     virtual void selectAll() {}
-#endif
+	virtual void cursorMoveBackward() {}
+    virtual void cursorMoveForward() {}
+    virtual void cursorMoveUp() {}
+    virtual void cursorMoveDown() {}
+	virtual void moveSelectChars(bool isLeftBtn, const DPoint& pt) {}
+	virtual void moveArrowBtn(const DPoint& pt) {}
+
+	virtual void copyToClipboard() {}
+	virtual void cutToClipboard() {}
+	virtual void pasteFromClipboard() {}
 
     virtual void getKeyBoardHeight(int height) {}
     
@@ -91,9 +92,8 @@ protected:
     @brief    Called by CAIMEDispatcher for text stored in delegate.
     */
     virtual const char * getContentText() { return 0; }
-    virtual int getCursorPos() { return 0; }
-    virtual std::pair<int, int> getCharRange() { return std::pair<int, int>(0, 0); }
 
+    virtual int getCursorPos() { return 0; }
     //////////////////////////////////////////////////////////////////////////
     // keyboard show/hide notification
     //////////////////////////////////////////////////////////////////////////
@@ -101,7 +101,6 @@ protected:
     virtual void keyboardDidShow(CCIMEKeyboardNotificationInfo& info)    {CC_UNUSED_PARAM(info);}
     virtual void keyboardWillHide(CCIMEKeyboardNotificationInfo& info)   {CC_UNUSED_PARAM(info);}
     virtual void keyboardDidHide(CCIMEKeyboardNotificationInfo& info)    {CC_UNUSED_PARAM(info);}
-
 protected:
     CAIMEDelegate();
 };

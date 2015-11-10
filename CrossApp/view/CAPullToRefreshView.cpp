@@ -7,10 +7,10 @@
 //
 
 #include "CAPullToRefreshView.h"
-#include "actions/CCActionInterval.h"
 #include "basics/CAApplication.h"
 #include "basics/CAScheduler.h"
-#include "support/CCPointExtension.h"
+#include "support/CAPointExtension.h"
+#include "animation/CAViewAnimation.h"
 
 #pragma CAPullToRefreshView
 
@@ -90,21 +90,21 @@ bool CAPullToRefreshView::isLayoutFinish()
 
 void CAPullToRefreshView::startLayout()
 {
-    CADipSize viewSize = this->getBounds().size;
-    CADipRect imageViewAndLoadingCenter;
-    CADipRect labelCenter;
+    DSize viewSize = this->getBounds().size;
+    DRect imageViewAndLoadingCenter;
+    DRect labelCenter;
     if (m_eLayoutLinearType == CALayoutLinearHorizontal)
     {
-        imageViewAndLoadingCenter.size = CADipSize(25, 120);
-        imageViewAndLoadingCenter.origin = CADipPoint(viewSize.width / 2 - 160, viewSize.height/2);
-        labelCenter.size = CADipSize(256, 80);
+        imageViewAndLoadingCenter.size = DSize(25, 120);
+        imageViewAndLoadingCenter.origin = DPoint(viewSize.width / 2 - 160, viewSize.height/2);
+        labelCenter.size = DSize(256, 80);
         labelCenter.origin = viewSize/2;
     }
     else
     {
-        imageViewAndLoadingCenter.size = CADipSize(120, 25);
-        imageViewAndLoadingCenter.origin = CADipPoint(viewSize.width / 2 - 160, 170);
-        labelCenter.size = CADipSize(80, 256);
+        imageViewAndLoadingCenter.size = DSize(120, 25);
+        imageViewAndLoadingCenter.origin = DPoint(viewSize.width / 2 - 160, 170);
+        labelCenter.size = DSize(80, 256);
         labelCenter.origin = viewSize/2;
     }
     
@@ -126,7 +126,7 @@ void CAPullToRefreshView::startLayout()
     {
         m_pPullToRefreshLabel = CALabel::createWithCenter(labelCenter);
         m_pPullToRefreshLabel->setFontSize(_px(24));
-        m_pPullToRefreshLabel->setColor(m_cLabelColor);
+		m_pPullToRefreshLabel->setColor(m_cLabelColor);
         m_pPullToRefreshLabel->setTextAlignment(CATextAlignmentCenter);
         m_pPullToRefreshLabel->setVerticalTextAlignmet(CAVerticalTextAlignmentCenter);
         m_pPullToRefreshLabel->setText(m_sPullToRefreshText);
@@ -150,7 +150,7 @@ void CAPullToRefreshView::startLayout()
     {
         m_pRefreshingLabel = CALabel::createWithCenter(labelCenter);
         m_pRefreshingLabel->setFontSize(_px(24));
-        m_pRefreshingLabel->setColor(m_cLabelColor);
+		m_pRefreshingLabel->setColor(m_cLabelColor);
         m_pRefreshingLabel->setTextAlignment(CATextAlignmentCenter);
         m_pRefreshingLabel->setVerticalTextAlignmet(CAVerticalTextAlignmentCenter);
         m_pRefreshingLabel->setText(m_sRefreshingText);
@@ -181,8 +181,12 @@ void CAPullToRefreshView::setPullToRefreshStateType(const CAPullToRefreshStateTy
             m_pReleaseToRefreshLabel->setVisible(false);
             m_pRefreshingLabel->setVisible(false);
             
-            m_pPullToImageView->stopAllActions();
-            m_pPullToImageView->runAction(CCRotateTo::create(0.2f * m_pPullToImageView->getRotation() / 180.f, 0));
+            CAViewAnimation::removeAnimations(m_s__StrID);
+            
+            CAViewAnimation::beginAnimations(m_s__StrID, NULL);
+            CAViewAnimation::setAnimationDuration(0.2f * m_pPullToImageView->getRotation() / 180.f);
+            m_pPullToImageView->setRotation(0);
+            CAViewAnimation::commitAnimations();
         }
             break;
         case CAPullToRefreshStatePulling:
@@ -196,8 +200,12 @@ void CAPullToRefreshView::setPullToRefreshStateType(const CAPullToRefreshStateTy
             m_pReleaseToRefreshLabel->setVisible(true);
             m_pRefreshingLabel->setVisible(false);
             
-            m_pPullToImageView->stopAllActions();
-            m_pPullToImageView->runAction(CCRotateTo::create(0.2f * (1 - m_pPullToImageView->getRotation() / 180.f), 180));
+            CAViewAnimation::removeAnimations(m_s__StrID);
+            
+            CAViewAnimation::beginAnimations(m_s__StrID, NULL);
+            CAViewAnimation::setAnimationDuration(0.2f * (1 - m_pPullToImageView->getRotation() / 180.f));
+            m_pPullToImageView->setRotation(180);
+            CAViewAnimation::commitAnimations();
         }
             break;
         case CAPullToRefreshStateRefreshing:

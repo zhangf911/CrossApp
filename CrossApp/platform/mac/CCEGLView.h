@@ -10,7 +10,7 @@ NS_CC_BEGIN
 
 class CCSet;
 class CCTouch;
-class CCSize;
+class DSize;
 
 class CC_DLL CCEGLView : public CCEGLViewProtocol
 {
@@ -38,6 +38,6 @@ private:
     CCEGLView(void);
 };
 
-NS_CC_END   // end of namespace   cocos2d
+NS_CC_END 
 
 #endif	// end of __CC_EGLVIEW_MAC_H__

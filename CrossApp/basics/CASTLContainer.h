@@ -25,7 +25,7 @@ template<class T>
 class CAList;
 
 template<class T>
-class CAVector
+class CAVector: public CAObject
 {
 public:
 	typedef typename std::vector<T>::iterator iterator;
@@ -165,17 +165,28 @@ public:
 
 	T at(size_t index) const
 	{
-		CCAssert(index >= 0 && index < size(), "index out of range in getObjectAtIndex()");
+        if (index < 0 || index >= size())
+        {
+            return NULL;
+        }
 		return _data[index];
 	}
 
 	T front() const
 	{
+        if (_data.empty())
+        {
+            return NULL;
+        }
 		return _data.front();
 	}
 
 	T back() const
 	{
+        if (_data.empty())
+        {
+            return NULL;
+        }
 		return _data.back();
 	}
 
@@ -292,7 +303,7 @@ public:
 	{
 		for (size_t i = 0; i < _data.size(); i++)
 		{
-            CC_SAFE_RELEASE(_data[i]);
+			CC_SAFE_RELEASE((CAObject*)_data[i]);
 		}
 		_data.clear();
 	}
@@ -339,7 +350,7 @@ protected:
 };
 
 template <class T>
-class CAList
+class CAList: public CAObject
 {
 public:
 public:
@@ -441,16 +452,24 @@ public:
 	{
 		return std::find(_data.begin(), _data.end(), object);
 	}
-
-	T front() const
-	{
-		return _data.front();
-	}
-
-	T back() const
-	{
-		return _data.back();
-	}
+    
+    T front() const
+    {
+        if (_data.empty())
+        {
+            return NULL;
+        }
+        return _data.front();
+    }
+    
+    T back() const
+    {
+        if (_data.empty())
+        {
+            return NULL;
+        }
+        return _data.back();
+    }
 
 	bool contains(T object) const
 	{
@@ -576,7 +595,7 @@ public:
 	{
 		for (iterator iter = _data.begin(); iter != _data.end(); ++iter)
 		{
-			CC_SAFE_RELEASE((*iter));
+			CC_SAFE_RELEASE((CAObject*)(*iter));
 		}
 		_data.clear();
 	}
@@ -602,7 +621,7 @@ protected:
 
 
 template <class T>
-class CADeque
+class CADeque: public CAObject
 {
 public:
 	typedef typename std::deque<T>::iterator iterator;
@@ -732,17 +751,28 @@ public:
     
     T at(size_t index) const
     {
-        CCAssert(index >= 0 && index < size(), "index out of range in getObjectAtIndex()");
+        if (index < 0 || index >= size())
+        {
+            return NULL;
+        }
         return _data[index];
     }
     
     T front() const
     {
+        if (_data.empty())
+        {
+            return NULL;
+        }
         return _data.front();
     }
     
     T back() const
     {
+        if (_data.empty())
+        {
+            return NULL;
+        }
         return _data.back();
     }
     
@@ -876,7 +906,7 @@ public:
     {
         for (size_t i = 0; i < _data.size(); i++)
         {
-            CC_SAFE_RELEASE(_data[i]);
+			CC_SAFE_RELEASE((CAObject*)_data[i]);
         }
         _data.clear();
     }
@@ -924,7 +954,7 @@ private:
 
 
 template <class K, class T>
-class CAMap
+class CAMap: public CAObject
 {
 public:
 	typedef typename std::map<K, T>::iterator iterator;
@@ -982,6 +1012,23 @@ public:
         return true;
 	}
 
+	void assign(K key, T object)
+	{
+		CC_SAFE_RETAIN(object);
+
+		iterator it = _data.find(key);
+		if (it == _data.end())
+		{
+			_data[key] = object;
+		}
+		else
+		{
+			CAObject* o = (CAObject*)it->second;
+			CC_SAFE_RELEASE_NULL(o);
+			it->second = object;
+		}
+	}
+
 	size_t size() const
 	{
 		return _data.size();
@@ -1002,7 +1049,8 @@ public:
 		iterator it = _data.find(key);
 		if (it != _data.end())
 		{
-            CC_SAFE_RELEASE_NULL(it->second);
+			CAObject* o = (CAObject*)it->second;
+			CC_SAFE_RELEASE_NULL(o);
 			_data.erase(it);
 			return true;
 		}
@@ -1033,7 +1081,8 @@ public:
 	{
 		for (iterator it = _data.begin(); it != _data.end(); it++)
 		{
-            CC_SAFE_RELEASE_NULL(it->second);
+			CAObject* o = (CAObject*)it->second;
+			CC_SAFE_RELEASE_NULL(o);
 		}
 		_data.clear();
 	}

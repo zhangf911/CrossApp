@@ -44,6 +44,14 @@ public:
     /**
      * @lua NA
      */
+    virtual void mouseMoved(CATouch* pTouch, CAEvent* pEvent) = 0;
+    /**
+     * @lua NA
+     */
+    virtual void mouseScrollWheel(CATouch* pTouch, float off_x, float off_y, CAEvent* pEvent) = 0;
+    /**
+     * @lua NA
+     */
     virtual ~CCEGLTouchDelegate() {}
 };
 
@@ -85,7 +93,7 @@ protected:
     
     CAVector<CAResponder*> m_vTouchesViews;
     
-    CCPoint m_tFirstPoint;
+    DPoint m_tFirstPoint;
 };
 
 class CC_DLL CATouchDispatcher : public CAObject, public CCEGLTouchDelegate
@@ -106,11 +114,21 @@ public:
 
     virtual void setDispatchEvents(bool dispatchEvents);
     
+    virtual bool isDispatchEvents() { return m_iDispatchEvents > 0; }
+    
     void setDispatchEventsTrue();
     
     void setDispatchEventsFalse();
     
     int getTouchCount();
+    
+    void addMouseMovedResponder(CAResponder* responder);
+    
+    void removeMouseMovedResponder(CAResponder* responder);
+    
+    void addMouseScrollWheel(CAResponder* responder);
+    
+    void removeMouseScrollWheel(CAResponder* responder);
     
 public:
 
@@ -130,16 +148,28 @@ public:
      * @lua NA
      */
     virtual void touchesCancelled(CCSet* touches, CAEvent* pEvent);
+    /**
+     * @lua NA
+     */
+    virtual void mouseMoved(CATouch* pTouch, CAEvent* pEvent);
+    /**
+     * @lua NA
+     */
+    virtual void mouseScrollWheel(CATouch* pTouch, float off_x, float off_y, CAEvent* pEvent);
     
 protected:
 
     CC_SYNTHESIZE_RETAIN(CAResponder*, m_pFirstResponder, FirstResponder);
-    
-    CC_SYNTHESIZE_IS_READONLY(bool, m_bDispatchEvents, DispatchEvents);
+
+    int m_iDispatchEvents;
     
     bool m_bLocked;
     
     std::map<int, CATouchController*> m_vTouchControllers;
+    
+    std::set<CAResponder*> m_pMouseMoveds;
+    
+    std::set<CAResponder*> m_pMouseScrollWheels;
 };
 
 // end of input group

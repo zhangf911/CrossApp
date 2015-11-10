@@ -13,22 +13,25 @@
 NS_CC_BEGIN;
 
 CAResponder::CAResponder()
-:m_bTouchMovedStopSubviews(false)
-,m_bTouchMovedListenHorizontal(true)
-,m_bTouchMovedListenVertical(true)
-,m_bTouchEnabled(true)
-,m_bHaveNextResponder(false)
-,m_bSlidingMinX(false)
-,m_bSlidingMaxX(false)
-,m_bSlidingMinY(false)
-,m_bSlidingMaxY(false)
+:m_bTouchEnabled(true)
+,m_bScrollEnabled(true)
+,m_bHaveNextResponder(true)
+,m_bHorizontalScrollEnabled(true)
+,m_bVerticalScrollEnabled(true)
+,m_bPriorityScroll(false)
+,m_bReachBoundaryHandOverToSuperview(true)
+,m_bTouchEventScrollHandOverToSuperview(true)
+,m_bMouseMovedEnabled(false)
+,m_bMouseScrollWheelEnabled(false)
+,m_uZLevel(0)
 {
 
 }
 
 CAResponder::~CAResponder()
 {
-
+    this->setMouseMovedEnabled(false);
+    this->setMouseScrollWheelEnabled(false);
 }
 
 bool CAResponder::isFirstResponder()
@@ -89,5 +92,60 @@ void CAResponder::ccTouchCancelled(CATouch *pTouch, CAEvent *pEvent)
     CC_UNUSED_PARAM(pTouch);
     CC_UNUSED_PARAM(pEvent);
 }
+
+void CAResponder::mouseMoved(CATouch* pTouch, CAEvent* pEvent)
+{
+    CC_UNUSED_PARAM(pTouch);
+    CC_UNUSED_PARAM(pEvent);
+}
+
+void CAResponder::mouseMovedOutSide(CATouch *pTouch, CAEvent *pEvent)
+{
+    CC_UNUSED_PARAM(pTouch);
+    CC_UNUSED_PARAM(pEvent);
+}
+
+void CAResponder::mouseScrollWheel(CATouch* pTouch, float off_x, float off_y, CAEvent* pEvent)
+{
+    CC_UNUSED_PARAM(pTouch);
+    CC_UNUSED_PARAM(pEvent);
+}
+
+void CAResponder::setMouseMovedEnabled(bool var)
+{
+    m_bMouseMovedEnabled = var;
+    if (m_bMouseMovedEnabled)
+    {
+        CAApplication::getApplication()->getTouchDispatcher()->addMouseMovedResponder(this);
+    }
+    else
+    {
+        CAApplication::getApplication()->getTouchDispatcher()->removeMouseMovedResponder(this);
+    }
+}
+
+bool CAResponder::isMouseMovedEnabled()
+{
+    return m_bMouseMovedEnabled;
+}
+
+void CAResponder::setMouseScrollWheelEnabled(bool var)
+{
+    m_bMouseScrollWheelEnabled = var;
+    if (m_bMouseScrollWheelEnabled)
+    {
+        CAApplication::getApplication()->getTouchDispatcher()->addMouseScrollWheel(this);
+    }
+    else
+    {
+        CAApplication::getApplication()->getTouchDispatcher()->removeMouseScrollWheel(this);
+    }
+}
+
+bool CAResponder::isMouseScrollWheelEnabled()
+{
+    return m_bMouseScrollWheelEnabled;
+}
+
 
 NS_CC_END;

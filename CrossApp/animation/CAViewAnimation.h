@@ -32,25 +32,29 @@ class CC_DLL CAViewAnimationModule : public CAObject
 {
 public:
 
-	std::string animationID;
-	void* context;
-	float duration;
-	float delay;
-	CAViewAnimationCurve curve;
-	float time;
-	CAMap<CAView*, CAObject*> animations;
+	std::string                 animationID;
+	void*                       context;
+	float                       duration;
+	float                       delay;
+    float                       repeatCount;
+    bool                        repeatAutoreverses;
+	CAViewAnimationCurve        curve;
+	float                       time;
+	CAMap<CAView*, CAObject*>   animations;
 
-	CAObject* willStartTarget;
-	CAObject* didStopTarget;
+	CAObject*                   willStartTarget;
+	CAObject*                   didStopTarget;
 
-	SEL_CAViewAnimation0 willStartSel0;
-	SEL_CAViewAnimation0 didStopSel0;
+	SEL_CAViewAnimation0        willStartSel0;
+	SEL_CAViewAnimation0        didStopSel0;
 
-	SEL_CAViewAnimation2 willStartSel2;
-	SEL_CAViewAnimation2 didStopSel2;
+	SEL_CAViewAnimation2        willStartSel2;
+	SEL_CAViewAnimation2        didStopSel2;
 
+    CC_SYNTHESIZE_IS(bool, bAlreadyRunning, AlreadyRunning);
+    
 	CAViewAnimationModule()
-		:willStartTarget(NULL)
+		: willStartTarget(NULL)
 		, didStopTarget(NULL)
 		, willStartSel0(NULL)
 		, didStopSel0(NULL)
@@ -61,7 +65,10 @@ public:
 		, duration(0.2f)
 		, delay(0.0f)
 		, time(0.0f)
+        , repeatCount(1.0f)
+        , repeatAutoreverses(false)
 		, curve(CAViewAnimationCurveLinear)
+        , bAlreadyRunning(false)
 	{
 
 	}
@@ -83,7 +90,11 @@ public:
     
     static void setAnimationDelay(float delay);// default(0)
     
-    static void setAnimationCurve(const CAViewAnimationCurve& curve);// default(CAViewAnimationCurveLinear
+    static void setAnimationCurve(const CAViewAnimationCurve& curve);// default(CAViewAnimationCurveLinear)
+    
+    static void setAnimationRepeatCount(float repeatCount);// default(1.0)
+    
+    static void setAnimationRepeatAutoreverses(bool repeatAutoreverses);// default(false)
     
     static void setAnimationWillStartSelector(CAObject* target, SEL_CAViewAnimation0 selector);
     
@@ -93,11 +104,17 @@ public:
     
     static void setAnimationDidStopSelector(CAObject* target, SEL_CAViewAnimation2 selector);
     
+    static void removeAnimations(const std::string& animationID);
+    
+    static void removeAnimationsWithView(CAView* view);
+
     static void setAnimationsEnabled(bool enabled);
     
     static bool areAnimationsEnabled();
 
     static bool areBeginAnimations();
+    
+    static bool areBeginAnimationsWithID(const std::string& animationID);
     
 protected:
 
@@ -106,12 +123,10 @@ protected:
     CAViewAnimation();
     
     virtual ~CAViewAnimation();
+
+    void setPoint(const DPoint& point, CAView* view);
     
-    void setFrameOrgin(const CCPoint& point, CAView* view);
-    
-    void setCenterOrgin(const CCPoint& point, CAView* view);
-    
-    void setContentSize(const CCSize& size, CAView* view);
+    void setContentSize(const DSize& size, CAView* view);
     
     void setScaleX(float scaleX, CAView* view);
     
@@ -133,8 +148,8 @@ protected:
     
     void setAlpha(float alpha, CAView* view);
     
-    void setImageRect(const CCRect& imageRect, CAView* view);
-    
+    void setImageRect(const DRect& imageRect, CAView* view);
+        
     void setFlipX(bool flipX, CAView* view);
     
     void setFlipY(bool flipY, CAView* view);

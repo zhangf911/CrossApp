@@ -22,7 +22,8 @@
 
 
 // Implement viewDidLoad to do additional setup after loading the view, typically from a nib.
-- (void)viewDidLoad {
+- (void)viewDidLoad
+{
     [super viewDidLoad];
     
     [self.view setBackgroundColor:[UIColor whiteColor]];
@@ -30,15 +31,15 @@
     CGRect rect = [[UIScreen mainScreen] bounds];
     //CGFloat scale = [[UIScreen mainScreen] scale];
     
-    if ( [[UIDevice currentDevice].systemVersion floatValue] >= 7.0)
-    {
-        rect.size.height -= 20;
-        rect.origin.y = 20;
-    }
-    else
-    {
-        rect.size = [[UIScreen mainScreen]applicationFrame].size;
-    }
+//    if ( [[UIDevice currentDevice].systemVersion floatValue] >= 7.0)
+//    {
+//        rect.size.height -= 20;
+//        rect.origin.y = 20;
+//    }
+//    else
+//    {
+//        rect.size = [[UIScreen mainScreen]applicationFrame].size;
+//    }
     
     EAGLView *__glView = [EAGLView viewWithFrame: rect
                                      pixelFormat: kEAGLColorFormatRGB565
@@ -56,16 +57,26 @@
 // This method is deprecated on ios6
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
     return UIInterfaceOrientationIsPortrait( interfaceOrientation );
+    //return UIInterfaceOrientationIsLandscape( interfaceOrientation );
 }
 
 // For ios6, use supportedInterfaceOrientations & shouldAutorotate instead
 - (NSUInteger) supportedInterfaceOrientations{
+    
 #ifdef __IPHONE_6_0
     return UIInterfaceOrientationMaskPortrait;
+    //return UIInterfaceOrientationMaskLandscapeRight;
 #endif
 }
 
-- (BOOL) shouldAutorotate {
+- (UIInterfaceOrientation)preferredInterfaceOrientationForPresentation
+{
+    return UIInterfaceOrientationPortrait;
+    //return UIInterfaceOrientationLandscapeRight;
+}
+
+- (BOOL) shouldAutorotate
+{
     return NO;
 }
 
@@ -75,21 +86,24 @@
     return NO;
 }
 
-- (void)didReceiveMemoryWarning {
+- (void)didReceiveMemoryWarning
+{
     // Releases the view if it doesn't have a superview.
     [super didReceiveMemoryWarning];
     
     // Release any cached data, images, etc that aren't in use.
 }
 
-- (void)viewDidUnload {
+- (void)viewDidUnload
+{
     [super viewDidUnload];
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
 }
 
 
-- (void)dealloc {
+- (void)dealloc
+{
     [super dealloc];
 }
 

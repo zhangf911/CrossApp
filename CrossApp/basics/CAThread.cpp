@@ -1,10 +1,10 @@
 
 #include "CAThread.h"
-
+#ifndef usleep
+#include "libwebsockets.h"
+#endif
 
 NS_CC_BEGIN
-
-
 
 CALock::CALock()
 {
@@ -30,6 +30,7 @@ void CALock::UnLock()
 CAThread::CAThread()
 : m_bIsRunning(false)
 , m_pThreadFunc(NULL)
+, m_iMaxMsgCount(32)
 {
 	pthread_mutex_init(&m_SleepMutex, NULL);
 	pthread_cond_init(&m_SleepCondition, NULL);
@@ -61,21 +62,47 @@ void CAThread::startAndWait(ThreadProcFunc func)
 
 void CAThread::notifyRun(void* param)
 {
-	m_ThreadDataQueue.AddElement(param);
-	pthread_cond_signal(&m_SleepCondition);
+	if (m_ThreadDataQueue.GetCount() < m_iMaxMsgCount)
+	{
+		m_ThreadDataQueue.AddElement(param);
+	}
+}
+
+void CAThread::clear(bool bFree)
+{
+	if (bFree)
+	{
+		std::vector< void* > v = m_ThreadDataQueue.GetQueueElements();
+		for (int i = 0; i < v.size(); i++)
+		{
+			CC_SAFE_FREE(v[i]);
+		}
+	}
+	else
+	{
+		m_ThreadDataQueue.Clear();
+	}
 }
 
 void CAThread::close()
 {
-	m_bIsRunning = false;
-	pthread_cond_wait(&m_SleepCondition, &m_SleepMutex);
-	pthread_detach(m_hThread);
+	if (m_bIsRunning)
+	{
+		m_bIsRunning = false;
+		pthread_cond_wait(&m_SleepCondition, &m_SleepMutex);
+        pthread_detach(m_hThread);
+	}
 }
 
 void CAThread::closeAtOnce()
 {
 	m_ThreadDataQueue.Clear();
 	close();
+}
+
+void CAThread::setMaxMsgCount(int v)
+{
+	m_iMaxMsgCount = v;
 }
 
 bool CAThread::isRunning()
@@ -90,6 +117,8 @@ void* CAThread::_ThreadProc(void* lpParameter)
 	
 	pAThread->m_bIsRunning = true;
 	pAThread->OnInitInstance();
+
+	pthread_mutex_lock(&pAThread->m_SleepMutex);
 	while (pAThread->m_bIsRunning)
 	{
 		if (pAThread->m_ThreadRunType == ThreadRunDirectly)
@@ -109,14 +138,21 @@ void* CAThread::_ThreadProc(void* lpParameter)
 			}
 			else
 			{
-				pthread_cond_wait(&pAThread->m_SleepCondition, &pAThread->m_SleepMutex);
+#if CC_TARGET_PLATFORM == CC_PLATFORM_WIN32
+				Sleep(5);
+#else
+				usleep(5000);
+#endif
 			}
 		}
 		else break;
 	}
+    
+	pthread_mutex_unlock(&pAThread->m_SleepMutex);
 	pAThread->OnExitInstance();
 	pAThread->m_bIsRunning = false;
 	pthread_cond_signal(&pAThread->m_SleepCondition);
+	pthread_exit((void *)0);
 	return 0;
 }
 

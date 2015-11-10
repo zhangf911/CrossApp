@@ -11,8 +11,9 @@
 #include "dispatcher/CATouch.h"
 #include "basics/CAApplication.h"
 #include "view/CAClippingView.h"
-#include "draw_nodes/CCDrawNode.h"
+#include "view/CADrawView.h"
 #include "view/CARenderImage.h"
+#include "platform/CADensityDpi.h"
 
 using namespace std;
 NS_CC_BEGIN
@@ -21,25 +22,21 @@ CASegmentedControl::CASegmentedControl(unsigned int itemsCount)
     : CAControl()
     , m_nItemsCount(itemsCount)
     , m_pBackgroundView(NULL)
-    , m_fSeparateWidth(1)
+    , m_fSeparateWidth(s_px_to_dip(2))
     , m_iSelectedIndex(-1)
     , m_iTouchIndex(0)
-    , m_cTextColor(ccc4(50, 190, 250, 255))
+    , m_cTextColor(ccc4(54, 195, 240, 255))
     , m_cTextSelectedColor(CAColor_white)
-    , m_cTintColor(ccc4(50, 190, 250, 255))
+    , m_cImageColor(CAColor_white)
+    , m_cImageSelectedColor(CAColor_white)
+    , m_cTintColor(ccc4(54, 195, 240, 255))
     , m_pTarget(NULL)
     , m_pCallFunc(NULL)
     , m_pSegmentItemBackgroundImage(NULL)
+    , m_sTitleFontName("")
+    , m_fTitleFontSize(_px(24))
 {
-    m_vTitles.clear();
-    m_vNormalImages.clear();
-    m_vSelectedImages.clear();
-    m_vIsEnabled.clear();
-    m_vContentOffset.clear();
-    m_vSegments.clear();
-    m_vSeparateView.clear();
-    m_vSegmentWidth.clear();
-    m_vSegmentItemBackground.clear();
+
 }
 
 CASegmentedControl::~CASegmentedControl()
@@ -52,7 +49,9 @@ CASegmentedControl::~CASegmentedControl()
     m_vSegments.clear();
     m_vSeparateView.clear();
     m_vSegmentWidth.clear();
-    m_vSegmentItemBackground.clear();
+    m_vImageSize.clear();
+	m_vSegmentItemBackground.clear();
+ 	m_pCallFunc = NULL;
 }
 
 void CASegmentedControl::removeAllSeparateImage()
@@ -74,7 +73,7 @@ void CASegmentedControl::onEnterTransitionDidFinish()
     CAControl::onEnterTransitionDidFinish();
 }
 
-CASegmentedControl* CASegmentedControl::createWithFrame(const CCRect& rect, unsigned int itemsCount)
+CASegmentedControl* CASegmentedControl::createWithFrame(const DRect& rect, unsigned int itemsCount)
 {
     CASegmentedControl* segmentedControl = new CASegmentedControl(itemsCount);
     if (segmentedControl && segmentedControl->initWithFrame(rect))
@@ -86,7 +85,7 @@ CASegmentedControl* CASegmentedControl::createWithFrame(const CCRect& rect, unsi
     return NULL;
 }
 
-CASegmentedControl* CASegmentedControl::createWithCenter(const CCRect& rect, unsigned int itemsCount)
+CASegmentedControl* CASegmentedControl::createWithCenter(const DRect& rect, unsigned int itemsCount)
 {
     CASegmentedControl* segmentedControl = new CASegmentedControl(itemsCount);
     if (segmentedControl && segmentedControl->initWithCenter(rect))
@@ -98,16 +97,16 @@ CASegmentedControl* CASegmentedControl::createWithCenter(const CCRect& rect, uns
     return NULL;
 }
 
-bool CASegmentedControl::initWithFrame(const CCRect& rect)
+bool CASegmentedControl::initWithFrame(const DRect& rect)
 {
     if (!CAControl::initWithFrame(rect))
     {
         return false;
     }
     this->setBackgroundImage( CAImage::create("source_material/btn_rounded_normal.png") );
-    this->removeAllSegments();
+
     const float elemWidth = this->getBounds().size.width / m_nItemsCount;
-    CCRect elemFrame = CCRectMake(0, 0, this->getBounds().size.width/m_nItemsCount, this->getBounds().size.height);
+    DRect elemFrame = DRect(0, 0, this->getBounds().size.width/m_nItemsCount, this->getBounds().size.height);
     for (int i = 0; i < m_nItemsCount; ++i)
     {
         CAView* segment = this->createDefaultSegment(i);
@@ -124,16 +123,16 @@ bool CASegmentedControl::initWithFrame(const CCRect& rect)
     return true;
 }
 
-bool CASegmentedControl::initWithCenter(const CCRect& rect)
+bool CASegmentedControl::initWithCenter(const DRect& rect)
 {
     if (!CAControl::initWithCenter(rect))
     {
         return false;
     }
     this->setBackgroundImage( CAImage::create("source_material/btn_rounded_normal.png") );
-    this->removeAllSegments();
+
     const float elemWidth = this->getBounds().size.width / m_nItemsCount;
-    CCRect elemFrame = CCRectMake(0, 0, this->getBounds().size.width/m_nItemsCount, this->getBounds().size.height);
+    DRect elemFrame = DRect(0, 0, this->getBounds().size.width/m_nItemsCount, this->getBounds().size.height);
     for (int i = 0; i < m_nItemsCount; ++i)
     {
         CAView *segment = this->createDefaultSegment(i);
@@ -156,9 +155,10 @@ void CASegmentedControl::setTitleColor(const CAColor4B& color)
     m_cTextColor = color;
     for(int index=0; index<m_vSegments.size(); ++index)
     {
+        CC_CONTINUE_IF(m_iSelectedIndex == index);
         CALabel* label = m_vTitles.at(index);
         if(label != NULL)
-            label->setColor(m_cTextColor);
+			label->setColor(m_cTextColor);
     }
 }
 
@@ -170,6 +170,46 @@ const CAColor4B& CASegmentedControl::getTitleColor()
 void CASegmentedControl::setTitleSelectedColor(const CAColor4B& color)
 {
     m_cTextSelectedColor = color;
+    CC_RETURN_IF(m_iSelectedIndex == -1);
+    CALabel* label = m_vTitles.at(m_iSelectedIndex);
+	if (label != NULL)
+	{
+		label->setColor(m_cTextSelectedColor);
+	}
+}
+
+const CAColor4B& CASegmentedControl::getTitleSelectedColor()
+{
+    return m_cTextSelectedColor;
+}
+
+void CASegmentedControl::setImageColor(const CAColor4B& color)
+{
+    m_cImageColor = color;
+    for(int index=0; index<m_vSegments.size(); ++index)
+    {
+        CC_CONTINUE_IF(m_iSelectedIndex == index);
+        CAImageView* imageView = dynamic_cast<CAImageView*>(m_vSegments.at(index)->getSubviewByTextTag("image"));
+        if(imageView != NULL)
+            imageView->setColor(m_cImageColor);
+    }
+}
+const CAColor4B& CASegmentedControl::getImageColor()
+{
+    return m_cImageColor;
+}
+
+void CASegmentedControl::setImageSelectedColor(const CAColor4B& color)
+{
+    m_cImageSelectedColor = color;
+    CC_RETURN_IF(m_iSelectedIndex == -1);
+    CAImageView* imageView = dynamic_cast<CAImageView*>(m_vSegments.at(m_iSelectedIndex)->getSubviewByTextTag("image"));
+    if(imageView != NULL)
+        imageView->setColor(m_cImageSelectedColor);
+}
+const CAColor4B& CASegmentedControl::getImageSelectedColor()
+{
+    return m_cImageSelectedColor;
 }
 
 void CASegmentedControl::setTintColor(const CAColor4B& color)
@@ -198,7 +238,7 @@ int CASegmentedControl::getSelectedAtIndex()
 
 int CASegmentedControl::getNumberOfSegments()
 {
-    return m_vSegments.size();
+    return m_nItemsCount;
 }
 
 void CASegmentedControl::insertSegmentWithTitleAtIndex(const std::string& title, int index)
@@ -212,11 +252,12 @@ void CASegmentedControl::insertSegmentWithTitleAtIndex(const std::string& title,
         CAView *segment = this->createDefaultSegment(index);
         if (segment)
         {
-            segment->setFrame(CCRectMake(0,0,this->getBounds().size.width/m_vSegments.size(), this->getBounds().size.height));
+            segment->setFrame(DRect(0,0,this->getBounds().size.width/m_vSegments.size(), this->getBounds().size.height));
             m_vSegments.insert(index, segment);
+			m_nItemsCount++;
             this->insertSubview(segment, 1);
         }
-        refreshAllSegmentItemBound();
+        refreshAllSegmentItemBounds();
         setTitleForSegmentAtIndex(title, index);
         refreshAllSegmentItemPosition();
         setSegmentItemBackgroundImage(m_pSegmentItemBackgroundImage);
@@ -224,7 +265,6 @@ void CASegmentedControl::insertSegmentWithTitleAtIndex(const std::string& title,
         cleanAllSeparate();
         createSeparate();
     }
-//    refreshSegmentItemByIndex(m_iSelectedIndex, CAControlStateSelected);
 }
 
 void CASegmentedControl::insertSegmentWithImageAtIndex(CAImage* image, int index, CAControlState controlState)
@@ -238,11 +278,12 @@ void CASegmentedControl::insertSegmentWithImageAtIndex(CAImage* image, int index
         CAView *segment = this->createDefaultSegment(index);
         if (segment)
         {
-            segment->setFrame(CCRectMake(0,0,this->getBounds().size.width/m_vSegments.size(), this->getBounds().size.height));
+            segment->setFrame(DRect(0,0,this->getBounds().size.width/m_vSegments.size(), this->getBounds().size.height));
             m_vSegments.insert(index, segment);
+			m_nItemsCount++;
             this->insertSubview(segment, 1);
         }
-        refreshAllSegmentItemBound();
+        refreshAllSegmentItemBounds();
         setImageForSegmentAtIndex(image, index, controlState);
         refreshAllSegmentItemPosition();
         setSegmentItemBackgroundImage(m_pSegmentItemBackgroundImage);
@@ -253,17 +294,37 @@ void CASegmentedControl::insertSegmentWithImageAtIndex(CAImage* image, int index
     refreshSegmentItemByIndex(m_iSelectedIndex, CAControlStateSelected);
 }
 
+void CASegmentedControl::refreshAllLable()
+{
+    for(int i=0; i<m_vTitles.size(); i++)
+    {
+        DPoint point = m_vSegments.at(i)->getBounds().origin;
+        DSize size = m_vSegments.at(i)->getBounds().size;
+        DSize contentOffset = m_vContentOffset.at(i);
+        CALabel* label = m_vTitles.at(i);
+        if(label != NULL)
+        {
+            label->setCenter(DRect(size.width*0.5f + contentOffset.width,
+                                    size.height*0.5f + contentOffset.height,
+                                    size.width,
+                                    size.height));
+        }
+    }
+}
+
 void CASegmentedControl::setTitleForSegmentAtIndex(const std::string& title, int index)
 {
     if(index < m_vSegments.size())
     {
-        CCPoint point = m_vSegments.at(index)->getBounds().origin;
-        CCSize size = m_vSegments.at(index)->getBounds().size;
-        CALabel* label = CALabel::createWithCenter(CCRect(m_vContentOffset.at(index).width+ size.width, m_vContentOffset.at(index).height + size.height, size.width, size.height));
+        DPoint point = m_vSegments.at(index)->getBounds().origin;
+        DSize size = m_vSegments.at(index)->getBounds().size;
+        CALabel* label = CALabel::createWithCenter(DRect(m_vContentOffset.at(index).width+ size.width, m_vContentOffset.at(index).height + size.height, size.width, size.height));
         label->setTextAlignment(CATextAlignmentCenter);
         label->setVerticalTextAlignmet(CAVerticalTextAlignmentCenter);
         label->setText(title);
-        label->setColor(m_cTextColor);
+        label->setFontSize(m_fTitleFontSize);
+        label->setFontName(m_sTitleFontName);
+		label->setColor(m_cTextColor);
         label->retain();
         CAVector<CALabel*>::iterator itr = m_vTitles.begin()+index;
         if(*itr != NULL)
@@ -278,41 +339,41 @@ void CASegmentedControl::setTitleForSegmentAtIndex(const std::string& title, int
         refreshSegmentItemByIndex(m_iSelectedIndex, CAControlStateSelected);
 }
 
-const std::string& CASegmentedControl::getTitleForSegmentAtIndex(int index)
+std::string CASegmentedControl::getTitleForSegmentAtIndex(int index)
 {
-    std::string str = "";
-    if(index >= 0 && index < m_vSegments.size())
+    if (index >= 0 && index < (int)m_vTitles.size())
     {
-        CAVector<CALabel*>::iterator itr = m_vTitles.begin()+index;
-        if((*itr) != NULL)
-            str = (*itr)->getText();
+        CALabel* label = m_vTitles.at(index);
+        if (label)
+        {
+            return label->getText();
+        }
     }
-    return str;
+    return "";
 }
 
 void CASegmentedControl::setImageForSegmentAtIndex(CAImage* image, int index, CAControlState controlState)
 {
-    if(index >= 0 && index < m_vSegments.size())
+    if(index >= 0 && index < (int)m_vSegments.size())
     {
-        CAVector<CALabel*>::iterator itr = m_vTitles.begin()+index;
-        if(*itr != NULL)
+        CALabel* label = m_vTitles.at(index);
+        if(label)
         {
-            (*itr)->removeFromSuperview();
-            CC_SAFE_RELEASE_NULL(*itr);
+            label->removeFromSuperview();
+            CC_SAFE_RELEASE(label);
+            m_vTitles.replace(index, NULL);
         }
         if( CAControlStateNormal == controlState )
         {
-            CAVector<CAImage*>::iterator itr_NImage = m_vNormalImages.begin();
-            *(itr_NImage + index) = image;
-            
-            CAVector<CAImage*>::iterator itr_SImage = m_vSelectedImages.begin();
-            if( *(itr_SImage + index) == NULL)
-                *(itr_SImage + index) = image;
+            m_vNormalImages.replace(index, image);
+            if (m_vSelectedImages.at(index) == NULL)
+            {
+                m_vSelectedImages.replace(index, image);
+            }
         }
         else if( CAControlStateSelected == controlState )
         {
-            CAVector<CAImage*>::iterator itr_SImage = m_vSelectedImages.begin();
-            *(itr_SImage + index) = image;
+            m_vSelectedImages.replace(index, image);
         }
 
         refreshSegmentItemByIndex(index, controlState);
@@ -336,11 +397,11 @@ void CASegmentedControl::setWidthForSegmentAtIndex(float width, int index)
 {
     if(index >= 0 && index < m_vSegments.size())
     {
-        std::vector<float>::iterator itr_width = m_vSegmentWidth.begin()+index;
-        *itr_width = width;
-
-        refreshAllSegmentItemBound();
-        for (int i=0; i<m_vSegments.size(); ++i) {
+        m_vSegmentWidth.at(index) = width;
+        
+        refreshAllSegmentItemBounds();
+        for (int i=0; i<(int)m_vSegments.size(); ++i)
+        {
             refreshSegmentItemByIndex(i, CAControlStateNormal);
         }
         refreshAllSegmentItemPosition();
@@ -355,41 +416,41 @@ void CASegmentedControl::setWidthForSegmentAtIndex(float width, int index)
 float CASegmentedControl::getWidthForSegmentAtIndex(int index)
 {
     float width = 0;
-    if(index >= 0 && index < m_vSegments.size())
+    if(index >= 0 && index < (int)m_vSegments.size())
     {
-        CAVector<CAView*>::iterator itr = m_vSegments.begin()+index;
-        width = (*itr)->getBounds().size.width;
+        width = m_vSegments.at(index)->getBounds().size.width;
     }
     return width;
 }
 
-void CASegmentedControl::setContentOffsetForSegmentAtIndex(CCSize offset, int index)
+void CASegmentedControl::setContentOffsetForSegmentAtIndex(DSize offset, int index)
 {
     if(index >= 0 && index < m_vSegments.size())
     {
-        std::vector<CCSize>::iterator itr = m_vContentOffset.begin()+index;
-        (*itr) = offset;
+        m_vContentOffset.at(index) = offset;
         
         CAObject* object = getObjectByIndex(index, CAControlStateNormal);
         
-        if(CALabel* label = dynamic_cast<CALabel*>(object)){
-            label->setFrameOrigin(CCPointMake(m_vContentOffset.at(index).width, m_vContentOffset.at(index).height));
-        }else if(CAImage* image = dynamic_cast<CAImage*>(object)){
+        if(CALabel* label = dynamic_cast<CALabel*>(object))
+        {
+            label->setFrameOrigin(m_vContentOffset.at(index));
+        }
+        else if(CAImage* image = dynamic_cast<CAImage*>(object))
+        {
             m_vSegments.at(index)->removeAllSubviews();
             CAImageView* imageView = CAImageView::createWithImage(image);
-            imageView->setFrameOrigin(CCPointMake(m_vContentOffset.at(index).width, m_vContentOffset.at(index).height));
+            imageView->setFrameOrigin(m_vContentOffset.at(index));
             m_vSegments.at(index)->addSubview(imageView);
         }
     }
 }
 
-CCSize CASegmentedControl::getContentOffsetForSegmentAtIndex(int index)
+DSize CASegmentedControl::getContentOffsetForSegmentAtIndex(int index)
 {
-    CCSize offset = CCSizeZero;
+    DSize offset = DSizeZero;
     if(index >= 0 && index < m_vSegments.size())
     {
-        std::vector<CCSize>::iterator itr = m_vContentOffset.begin()+index;
-        offset = (*itr);
+        offset = m_vContentOffset.at(index);
     }
     return offset;
 }
@@ -398,8 +459,7 @@ void CASegmentedControl::setEnabledForSegmentAtIndex(bool isEnable, int index)
 {
     if(index >= 0 && index < m_vSegments.size())
     {
-        std::vector<bool>::iterator itr = m_vIsEnabled.begin()+index;
-        (*itr) = isEnable;
+        m_vIsEnabled.at(index) = isEnable;
         refreshSegmentItemByIndex(index, CAControlStateNormal);
     }
     refreshSegmentItemByIndex(m_iSelectedIndex, CAControlStateSelected);
@@ -410,8 +470,7 @@ bool CASegmentedControl::isEnabledForSegmentAtIndex(int index)
     bool isEnable = true;
     if(index >= 0 && index < m_vSegments.size())
     {
-        std::vector<bool>::iterator itr = m_vIsEnabled.begin()+index;
-        isEnable = (*itr);
+        isEnable = m_vIsEnabled.at(index);
     }
     return isEnable;
 }
@@ -421,43 +480,51 @@ void CASegmentedControl::removeSegmentAtIndex(int index)
     if((index<0 || index >= m_vSegments.size()) && m_vSegments.size() == 1)
         return;
     {
-        CAVector<CALabel*>::iterator itr = m_vTitles.begin() + index;
-        CC_SAFE_RELEASE(*itr);
-        m_vTitles.erase(itr);
+        m_vTitles.at(index)->removeFromSuperview();
+        m_vTitles.erase(index);
     }
+    
     {
-        CAVector<CAImage*>::iterator itr = m_vNormalImages.begin() + index;
-        CC_SAFE_RELEASE(*itr);
-        m_vNormalImages.erase(itr);
+        m_vNormalImages.erase(index);
     }
+    
     {
         std::vector<bool>::iterator itr = m_vIsEnabled.begin() + index;
         m_vIsEnabled.erase(itr);
     }
+    
     {
-        std::vector<CCSize>::iterator itr = m_vContentOffset.begin() + index;
+        std::vector<DSize>::iterator itr = m_vContentOffset.begin() + index;
         m_vContentOffset.erase(itr);
     }
+    
+    {
+        std::vector<DSize>::iterator itr = m_vImageSize.begin() + index;
+        m_vImageSize.erase(itr);
+    }
+    
     {
         std::vector<float>::iterator itr = m_vSegmentWidth.begin() + index;
         m_vSegmentWidth.erase(itr);
     }
+    
     {
-        CAVector<CAView*>::iterator itr = m_vSegmentItemBackground.begin() + index;
-        (*itr)->removeFromSuperview();
-        m_vSegmentItemBackground.erase(itr);
+        m_vSegmentItemBackground.at(index)->removeFromSuperview();
+        m_vSegmentItemBackground.erase(index);
     }
+    
     {
-        CAVector<CAView*>::iterator itr = m_vSegments.begin() + index;
-        (*itr)->removeFromSuperview();
-        m_vSegments.erase(itr);
+        m_vSegments.at(index)->removeFromSuperview();
+        m_vSegments.erase(index);
+		m_nItemsCount--;
     }
+    
     if(index <= m_iSelectedIndex)
     {
         m_iSelectedIndex--;
     }
 
-    refreshAllSegmentItemBound();
+    refreshAllSegmentItemBounds();
     refreshAllSegmentItemPosition();
     setSegmentItemBackgroundImage(m_pSegmentItemBackgroundImage);
     
@@ -466,9 +533,9 @@ void CASegmentedControl::removeSegmentAtIndex(int index)
 }
 
 
-void CASegmentedControl::setContentSize(const CrossApp::CCSize &var)
+void CASegmentedControl::setContentSize(const CrossApp::DSize &var)
 {
-    CCSize size = var;
+    DSize size = var;
     size.height = MAX(size.height, _px(58));
     size.width = MAX(size.width, size.height * 2);
     CAControl::setContentSize(size);
@@ -476,18 +543,20 @@ void CASegmentedControl::setContentSize(const CrossApp::CCSize &var)
     {
         m_pBackgroundView->setFrame(this->getBounds());
     }
+    
+    refreshAllSegmentItemBounds();
+    refreshAllLable();
+    float length = 0;
+    CAVector<CAView*>::iterator itr = m_vSegments.begin();
+    for(; itr != m_vSegments.end(); ++itr)
+    {
+        DRect rect = DRect(length, 0, (*itr)->getBounds().size.width, (*itr)->getBounds().size.height);
+        length += (*itr)->getBounds().size.width;
+        (*itr)->setFrame(rect);
+    }
+    refreshAllSegmentItemBackgroundPosition();
     cleanAllSeparate();
     createSeparate();
-}
-
-void CASegmentedControl::setBackgroundView(CrossApp::CAView *view)
-{
-    CC_SAFE_RETAIN(view);
-    if(m_pBackgroundView != NULL)
-        m_pBackgroundView->removeFromSuperview();
-    m_pBackgroundView = view;
-    m_pBackgroundView->setFrame(this->getBounds());
-    this->insertSubview(m_pBackgroundView, -2);
 }
 
 CAView* CASegmentedControl::getBackgroundView()
@@ -497,8 +566,7 @@ CAView* CASegmentedControl::getBackgroundView()
 
 void CASegmentedControl::setBackgroundImage(CAImage* image)
 {
-    if(m_pBackgroundView != NULL)
-        m_pBackgroundView->removeFromSuperview();
+    this->removeSubview(m_pBackgroundView);
     CAScale9ImageView* backGroundImageView = CAScale9ImageView::createWithFrame(this->getBounds());
     backGroundImageView->setImage(image);
     backGroundImageView->setVisible(true);
@@ -508,10 +576,10 @@ void CASegmentedControl::setBackgroundImage(CAImage* image)
 
 void CASegmentedControl::createSeparate()
 {
-    CCRect frame = CCRectMake(0, 0, m_fSeparateWidth, this->getBounds().size.height);
+    DRect frame = DRect(0, 0, m_fSeparateWidth, this->getBounds().size.height);
     float length = 0;
-    int count = m_vSegments.size();
-    std::vector<CAView *>::iterator itr = m_vSegments.begin();
+    size_t count = m_vSegments.size();
+	CAVector<CAView *>::iterator itr = m_vSegments.begin();
     for(; itr != m_vSegments.end() && count != 1; ++ itr, --count)
     {
         length += (*itr)->getBounds().size.width;
@@ -525,7 +593,7 @@ void CASegmentedControl::createSeparate()
 
 void CASegmentedControl::cleanAllSeparate()
 {
-    std::vector<CAView *>::iterator itr = m_vSeparateView.begin();
+	CAVector<CAView *>::iterator itr = m_vSeparateView.begin();
     for(; itr != m_vSeparateView.end(); ++itr)
     {
         (*itr)->removeFromSuperview();
@@ -533,15 +601,7 @@ void CASegmentedControl::cleanAllSeparate()
     m_vSeparateView.clear();
 }
 
-void CASegmentedControl::removeAllSegments()
-{
-    for(int i=0; i<m_vSegments.size(); ++i)
-    {
-        removeSegmentAtIndex(i);
-    }
-}
-
-void CASegmentedControl::refreshAllSegmentItemBound()
+void CASegmentedControl::refreshAllSegmentItemBounds()
 {
     CAVector<CAView*>::iterator itr_segment= m_vSegments.begin();
     for(int index=0; itr_segment!=m_vSegments.end(); ++itr_segment, ++index)
@@ -563,7 +623,7 @@ void CASegmentedControl::refreshAllSegmentItemBound()
         {
             segmentWidth = (this->getBounds().size.width - setWidth)/(m_vSegmentWidth.size()-setWidthCount);
         }
-        (*itr_segment)->setBounds(CCRectMake((*itr_segment)->getBounds().origin.x,
+        (*itr_segment)->setBounds(DRect((*itr_segment)->getBounds().origin.x,
                                              (*itr_segment)->getBounds().origin.y,
                                              segmentWidth,
                                              (*itr_segment)->getBounds().size.height));
@@ -576,12 +636,11 @@ void CASegmentedControl::refreshAllSegmentItemPosition()
     CAVector<CAView*>::iterator itr = m_vSegments.begin();
     for(; itr != m_vSegments.end(); ++itr)
     {
-        CCRect rect = CCRectMake(length, 0, (*itr)->getBounds().size.width, (*itr)->getBounds().size.height);
+        DRect rect = DRect(length, 0, (*itr)->getBounds().size.width, (*itr)->getBounds().size.height);
         length += (*itr)->getBounds().size.width;
         (*itr)->setFrame(rect);
     }
-    this->setFrame(CCRectMake(this->getFrameOrigin().x, this->getFrameOrigin().y, length, this->getBounds().size.height));
-    /*this->setContentSize(CCSize(length, this->getBounds().size.height));*/
+    this->setFrame(DRect(this->getFrameOrigin().x, this->getFrameOrigin().y, length, this->getBounds().size.height));
 }
 
 void CASegmentedControl::refreshAllSegmentItemBackgroundPosition()
@@ -591,13 +650,13 @@ void CASegmentedControl::refreshAllSegmentItemBackgroundPosition()
     CAVector<CAView*>::iterator itr_bg = m_vSegmentItemBackground.begin();
     for(; itr != m_vSegments.end(); ++itr, ++itr_bg)
     {
-        CCRect rect = CCRectMake(length, 0, (*itr)->getFrame().size.width, (*itr)->getBounds().size.height);
+        DRect rect = DRect(length, 0, (*itr)->getFrame().size.width, (*itr)->getBounds().size.height);
         length += (*itr)->getFrame().size.width;
         (*itr_bg)->setFrame(rect);
     }
 }
 
-void CASegmentedControl::refreshSegmentItemByPoint(CCPoint point, CAControlState controlState)
+void CASegmentedControl::refreshSegmentItemByPoint(DPoint point, CAControlState controlState)
 {
     int index =getSegmentItemIndexByPoint(point);
     refreshSegmentItemByIndex(index, controlState);
@@ -608,44 +667,67 @@ void CASegmentedControl::refreshSegmentItemByIndex(int index, CAControlState con
     if(index<0 && index>=m_vSegments.size())
         return;
     CAObject* object = getObjectByIndex(index, controlState);
-    CCSize segmentSize = m_vSegments.at(index)->getBounds().size;
-    CCSize contentOffset = m_vContentOffset.at(index);
+    DSize segmentSize = m_vSegments.at(index)->getBounds().size;
+    DSize contentOffset = m_vContentOffset.at(index);
+    DSize imageSize = m_vImageSize.at(index);
     
     if(CALabel* label = dynamic_cast<CALabel*>(object))
     {
-        label->setCenter(CCRectMake(segmentSize.width*0.5f + contentOffset.width,
-                                    segmentSize.height*0.5f + contentOffset.height,
-                                    segmentSize.width,
-                                    segmentSize.height));
-    }else if(CAImage* image = dynamic_cast<CAImage*>(object)){
-        CCSize imageSize = image->getContentSize();
-        CADipSize segmentSizeDip = CADipSize( segmentSize );
-        float width = imageSize.width;
-        float height = imageSize.height;
-        if(imageSize.width > segmentSizeDip.width)
+        label->setCenter(DRect(segmentSize.width*0.5f + contentOffset.width,
+                                segmentSize.height*0.5f + contentOffset.height,
+                                segmentSize.width,
+                                segmentSize.height));
+    }
+    else if(CAImage* image = dynamic_cast<CAImage*>(object))
+    {
+        DSize imageSelfSize =  DSize(image->getContentSize().width, image->getContentSize().height);
+    
+        DSize segmentSizeDip = DSize( segmentSize );
+        float width = imageSelfSize.width;
+        float height = imageSelfSize.height;
+        if(imageSelfSize.width > segmentSizeDip.width)
         {
             width = segmentSizeDip.width;
         }
-        if(imageSize.height > segmentSizeDip.height)
+        if(imageSelfSize.height > segmentSizeDip.height)
         {
             height = segmentSizeDip.height;
         }
         m_vSegments.at(index)->removeAllSubviews();
         CAImageView* imageView = CAImageView::createWithImage(image);
-        imageView->setCenter(CCRectMake(segmentSize.width*0.5f + contentOffset.width,
+        if( imageSize.width || imageSize.height)
+        {
+            width = imageSize.width;
+            height = imageSize.height;
+        }
+        imageView->setCenter(DRect(segmentSize.width*0.5f + contentOffset.width,
                                         segmentSize.height*0.5f + contentOffset.height,
                                         width,
                                         height));
+        imageView->setTextTag("image");
         m_vSegments.at(index)->addSubview(imageView);
-    }else{
+        
+        if (controlState == CAControlStateSelected || controlState ==  CAControlStateHighlighted)
+        {
+            imageView->setColor(m_cImageSelectedColor);
+        }
+        else
+        {
+            imageView->setColor(m_cImageColor);
+        }
+        
+    }
+    else
+    {
         m_vSegments.at(index)->removeAllSubviews();
     }
 }
 
-int CASegmentedControl::getSegmentItemIndexByPoint(CCPoint point)
+int CASegmentedControl::getSegmentItemIndexByPoint(DPoint point)
 {
     if(point.x < 0)
         return -1;
+    
     int index = 0;
     float length = 0;
     CAVector<CAView*>::iterator itr = m_vSegments.begin();
@@ -659,7 +741,6 @@ int CASegmentedControl::getSegmentItemIndexByPoint(CCPoint point)
         index++;
     }
     
-    CCAssert(index < m_vSegments.size(), "index is overStep");
     return index;
 }
 
@@ -670,26 +751,37 @@ CAObject* CASegmentedControl::getObjectByIndex(int index, CAControlState control
     {
         if(CAControlStateNormal == controlState)
         {
-            if(m_vTitles.at(index) != NULL){
+            if(m_vTitles.at(index) != NULL)
+            {
                 object = m_vTitles.at(index);
-                ((CALabel*)object)->setColor(m_cTextColor);
-            }else{
+				((CALabel*)object)->setColor(m_cTextColor);
+            }
+            else
+            {
                 object = m_vNormalImages.at(index);
             }
-        }else if(CAControlStateHighlighted == controlState)
+        }
+        else if(CAControlStateHighlighted == controlState)
         {
-            if(m_vTitles.at(index) != NULL){
+            if(m_vTitles.at(index) != NULL)
+            {
                 object = m_vTitles.at(index);
-                ((CALabel*)object)->setColor(m_cTextSelectedColor);
-            }else{
+				((CALabel*)object)->setColor(m_cTextSelectedColor);
+            }
+            else
+            {
                 object = m_vNormalImages.at(index);
             }
-        }else if(CAControlStateSelected == controlState)
+        }
+        else if(CAControlStateSelected == controlState)
         {
-            if(m_vTitles.at(index) != NULL){
+            if(m_vTitles.at(index) != NULL)
+            {
                 object = m_vTitles.at(index);
-                ((CALabel*)object)->setColor(m_cTextSelectedColor);
-            }else{
+				((CALabel*)object)->setColor(m_cTextSelectedColor);
+            }
+            else
+            {
                 object = m_vSelectedImages.at(index);
             }
         }
@@ -725,8 +817,11 @@ CAView* CASegmentedControl::createDefaultSegment(int index)
         std::vector<bool>::iterator itr = m_vIsEnabled.begin()+index;
         m_vIsEnabled.insert(itr, true);
         
-        std::vector<CCSize>::iterator itr_offset = m_vContentOffset.begin()+index;
-        m_vContentOffset.insert(itr_offset, CCSizeMake(0, 0));
+        std::vector<DSize>::iterator itr_offset = m_vContentOffset.begin()+index;
+        m_vContentOffset.insert(itr_offset, DSize(0, 0));
+        
+        std::vector<DSize>::iterator itr_imageSize = m_vImageSize.begin()+index;
+        m_vImageSize.insert(itr_imageSize, DSize(0, 0));
         
         std::vector<float>::iterator itr_width = m_vSegmentWidth.begin()+index;
         m_vSegmentWidth.insert(itr_width, -1);
@@ -742,70 +837,54 @@ void CASegmentedControl::setSegmentItemBackgroundImage(CAImage* image)
 {
     m_pSegmentItemBackgroundImage = image;
     
-    if(m_pBackgroundView && m_pBackgroundView->isVisible() && m_pSegmentItemBackgroundImage)
+    if (!m_vSegmentItemBackground.empty())
     {
         CAVector<CAView*>::iterator itr = m_vSegmentItemBackground.begin();
-        
-        for (int i=0; itr != m_vSegmentItemBackground.end() && (*itr)!=NULL; ++itr, ++i) {
-            (*itr) -> removeFromSuperview();
-            (*itr) = getTailorImageAtIndex(i, image);
-            (*itr)->setVisible(false);
-            this->insertSubview(*itr, -1);
+        for (; itr != m_vSegmentItemBackground.end(); itr++)
+        {
+            this->removeSubview(*itr);
+        }
+        m_vSegmentItemBackground.clear();
+        for (int i = 0; i < m_nItemsCount; i++)
+        {
+            CAImageView* imageView = (CAImageView*)getTailorImageAtIndex(i, image);
+            m_vSegmentItemBackground.pushBack(imageView);
+            imageView->setVisible(false);
+            this->insertSubview(imageView, -1);
         }
     }
-    else if(m_pBackgroundView && !m_pBackgroundView->isVisible() && m_pSegmentItemBackgroundImage)
-    {
-        m_pBackgroundView->setVisible(true);
-        std::vector<CAView*>::iterator itr = m_vSegmentItemBackground.begin();
-        
-        for (int i=0; itr != m_vSegmentItemBackground.end() && (*itr)!=NULL; ++itr, ++i) {
-            (*itr) -> removeFromSuperview();
-            (*itr) = getTailorImageAtIndex(i, image);
-            (*itr)->setVisible(false);
-            this->insertSubview(*itr, -1);
-        }
-        m_pBackgroundView->setVisible(false);
-    }
+    
     refreshAllSegmentItemBackgroundPosition();
 }
 
 CAView* CASegmentedControl::getTailorImageAtIndex(int index, CAImage* image)
 {
     CAImageView* imageView = NULL;
-    if (NULL == m_pBackgroundView) {
-        imageView = CAImageView::createWithImage(CAImage::create(NULL));
-        return imageView;
-    }
+
     CAScale9ImageView* clipNode = CAScale9ImageView::createWithFrame(m_pBackgroundView->getBounds());
     clipNode->setImage(image);
-    CAClippingView* clip = CAClippingView::create(m_pBackgroundView);
-    clip->addSubview(clipNode);
-    clip->setInverted(false);
-    clip->setAlphaThreshold(0);
-    
+
     float x = 0;
     
-    for(int i=0; i<= index-1; ++i)
+    for(int i=0; i< index; ++i)
     {
-        x +=m_vSegments.at(i)->getBounds().size.width;
+        x += m_vSegments.at(i)->getBounds().size.width;
     }
     
     CAView* segment = m_vSegments.at(index);
     if(segment)
     {
-        clip->setFrame(this->getBounds());
-        this->addSubview(clip);
-        CARenderImage* render = CARenderImage::create(m_pBackgroundView->getBounds().size.width, m_pBackgroundView->getBounds().size.height, kCAImagePixelFormat_RGBA8888);
-        render->beginWithClear(0, 0, 0, 0);
-        clip->visit();
-        render->end();
-        clip->removeFromSuperview();
+        DSize size = clipNode->getFrame().size;
+        CARenderImage* render = CARenderImage::create(size.width, size.height);
+        render->printscreenWithView(clipNode);
         
-        CCRect rect = CCRectMake( x, 0, segment->getBounds().size.width, segment->getBounds().size.height);
-        imageView = CAImageView::createWithImage(render->getSprite()->getImage());
-        imageView->setRotationX(180.0f);
+        DRect rect;
+        rect.origin = DPoint(x, 0);
+        rect.size = segment->getBounds().size;
+
+        imageView = CAImageView::createWithImage(render->getImageView()->getImage());
         imageView->setFrame(rect);
-        imageView->setImageRect(rect, false, rect.size);
+        imageView->setImageRect(rect);
     }
     return imageView;
 }
@@ -817,11 +896,42 @@ void CASegmentedControl::setSegmentItemBackgroundVisibleWithIndex(bool isVisible
         (*itr)->setVisible(isVisible);
 }
 
+void CASegmentedControl::setImageSizeAtIndex(DSize size, int index)
+{
+    if(index >= 0 && index < m_vSegments.size())
+    {
+        m_vImageSize.at(index) = size;
+        refreshSegmentItemByIndex(index, CAControlStateNormal);
+        refreshSegmentItemByIndex(index, CAControlStateSelected);
+    }
+}
+
+void CASegmentedControl::setTitleFontName(std::string titleName)
+{
+    m_sTitleFontName = titleName;
+    CAVector<CALabel*>::iterator itr = m_vTitles.begin();
+    for(; itr != m_vTitles.end(); itr++)
+    {
+        (*itr)->setFontName(titleName);
+    }
+}
+
+void CASegmentedControl::setTitleFontSize(float titleSize)
+{
+    m_fTitleFontSize = titleSize;
+    CAVector<CALabel*>::iterator itr = m_vTitles.begin();
+    for(; itr != m_vTitles.end(); itr++)
+    {
+        if(*itr!=NULL)
+            (*itr)->setFontSize(titleSize);
+    }
+}
+
 #pragma mark --
 
 bool CASegmentedControl::ccTouchBegan(CATouch *pTouch, CAEvent *pEvent)
 {
-    CCPoint point = pTouch->getLocation();
+    DPoint point = pTouch->getLocation();
     point = this->convertToNodeSpace(point);
     
     int index = getSegmentItemIndexByPoint(point);
@@ -841,7 +951,7 @@ bool CASegmentedControl::ccTouchBegan(CATouch *pTouch, CAEvent *pEvent)
 
 void CASegmentedControl::ccTouchMoved(CrossApp::CATouch *pTouch, CrossApp::CAEvent *pEvent)
 {
-    CCPoint point = pTouch->getLocation();
+    DPoint point = pTouch->getLocation();
     point = this->convertToNodeSpace(point);
     
     if (getBounds().containsPoint(point))
@@ -871,15 +981,17 @@ void CASegmentedControl::ccTouchMoved(CrossApp::CATouch *pTouch, CrossApp::CAEve
 
 void CASegmentedControl::ccTouchEnded(CATouch *pTouch, CAEvent *pEvent)
 {
-    CCPoint point = pTouch->getLocation();
+    DPoint point = pTouch->getLocation();
     point = this->convertToNodeSpace(point);
     
     int index =getSegmentItemIndexByPoint(point);
     if(index>-1 && index<m_vSegments.size())
     {
         if( -1 != m_iSelectedIndex )
+        {
             refreshSegmentItemByIndex(m_iSelectedIndex, CAControlStateNormal);
-        setSegmentItemBackgroundVisibleWithIndex(false, m_iSelectedIndex);
+            setSegmentItemBackgroundVisibleWithIndex(false, m_iSelectedIndex);
+        }
         refreshSegmentItemByIndex(index, CAControlStateSelected);
         setSegmentItemBackgroundVisibleWithIndex(true, index);
         m_iSelectedIndex = index;
@@ -891,7 +1003,6 @@ void CASegmentedControl::ccTouchCancelled(CATouch *pTouch, CAEvent *pEvent)
 {
     refreshSegmentItemByIndex(m_iTouchIndex, CAControlStateNormal);
     setSegmentItemBackgroundVisibleWithIndex(false, m_iTouchIndex);
-
 }
 
 NS_CC_END

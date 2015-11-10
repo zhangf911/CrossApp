@@ -91,55 +91,6 @@ do {                                                            \
     __director->end();                                            \
 } while(0)
 
-/** @def CC_CONTENT_SCALE_FACTOR
-On Mac it returns 1;
-On iPhone it returns 2 if RetinaDisplay is On. Otherwise it returns 1
-*/
-#define CC_CONTENT_SCALE_FACTOR() CAApplication::getApplication()->getContentScaleFactor()
-
-/****************************/
-/** RETINA DISPLAY ENABLED **/
-/****************************/
-
-/** @def CC_RECT_PIXELS_TO_POINTS
- Converts a rect in pixels to points
- */
-#define CC_RECT_PIXELS_TO_POINTS(__rect_in_pixels__)                                                                        \
-    CCRectMake( (__rect_in_pixels__).origin.x / CC_CONTENT_SCALE_FACTOR(), (__rect_in_pixels__).origin.y / CC_CONTENT_SCALE_FACTOR(),    \
-            (__rect_in_pixels__).size.width / CC_CONTENT_SCALE_FACTOR(), (__rect_in_pixels__).size.height / CC_CONTENT_SCALE_FACTOR() )
-
-/** @def CC_RECT_POINTS_TO_PIXELS
- Converts a rect in points to pixels
- */
-#define CC_RECT_POINTS_TO_PIXELS(__rect_in_points_points__)                                                                        \
-    CCRectMake( (__rect_in_points_points__).origin.x * CC_CONTENT_SCALE_FACTOR(), (__rect_in_points_points__).origin.y * CC_CONTENT_SCALE_FACTOR(),    \
-            (__rect_in_points_points__).size.width * CC_CONTENT_SCALE_FACTOR(), (__rect_in_points_points__).size.height * CC_CONTENT_SCALE_FACTOR() )
-
-/** @def CC_POINT_PIXELS_TO_POINTS
- Converts a rect in pixels to points
- */
-#define CC_POINT_PIXELS_TO_POINTS(__pixels__)                                                                        \
-CCPointMake( (__pixels__).x / CC_CONTENT_SCALE_FACTOR(), (__pixels__).y / CC_CONTENT_SCALE_FACTOR())
-
-/** @def CC_POINT_POINTS_TO_PIXELS
- Converts a rect in points to pixels
- */
-#define CC_POINT_POINTS_TO_PIXELS(__points__)                                                                        \
-CCPointMake( (__points__).x * CC_CONTENT_SCALE_FACTOR(), (__points__).y * CC_CONTENT_SCALE_FACTOR())
-
-/** @def CC_POINT_PIXELS_TO_POINTS
- Converts a rect in pixels to points
- */
-#define CC_SIZE_PIXELS_TO_POINTS(__size_in_pixels__)                                                                        \
-CCSizeMake( (__size_in_pixels__).width / CC_CONTENT_SCALE_FACTOR(), (__size_in_pixels__).height / CC_CONTENT_SCALE_FACTOR())
-
-/** @def CC_POINT_POINTS_TO_PIXELS
- Converts a rect in points to pixels
- */
-#define CC_SIZE_POINTS_TO_PIXELS(__size_in_points__)                                                                        \
-CCSizeMake( (__size_in_points__).width * CC_CONTENT_SCALE_FACTOR(), (__size_in_points__).height * CC_CONTENT_SCALE_FACTOR())
-
-
 #ifndef FLT_EPSILON
 #define FLT_EPSILON     1.192092896e-07F
 #endif // FLT_EPSILON
@@ -180,10 +131,6 @@ It should work same as apples CFSwapInt32LittleToHost(..)
 #define CC_PROFILER_STOP_CATEGORY(__cat__, __name__) do{ if(__cat__) CCProfilingEndTimingBlock(__name__); } while(0)
 #define CC_PROFILER_RESET_CATEGORY(__cat__, __name__) do{ if(__cat__) CCProfilingResetTimingBlock(__name__); } while(0)
 
-#define CC_PROFILER_START_INSTANCE(__id__, __name__) do{ CCProfilingBeginTimingBlock( CCString::createWithFormat("%08X - %s", __id__, __name__)->getCString() ); } while(0)
-#define CC_PROFILER_STOP_INSTANCE(__id__, __name__) do{ CCProfilingEndTimingBlock(    CCString::createWithFormat("%08X - %s", __id__, __name__)->getCString() ); } while(0)
-#define CC_PROFILER_RESET_INSTANCE(__id__, __name__) do{ CCProfilingResetTimingBlock( CCString::createWithFormat("%08X - %s", __id__, __name__)->getCString() ); } while(0)
-
 
 #else
 
@@ -215,13 +162,6 @@ It should work same as apples CFSwapInt32LittleToHost(..)
         } \
     } while (false)
 #endif
-
-/** @def CC_INCREMENT_GL_DRAWS_BY_ONE
- Increments the GL Draws counts by one.
- The number of calls per frame are displayed on the screen when the CAApplication's stats are enabled.
- */
-extern unsigned int CC_DLL g_uNumberOfDraws;
-#define CC_INCREMENT_GL_DRAWS(__n__) g_uNumberOfDraws += __n__
 
 /*******************/
 /** Notifications **/

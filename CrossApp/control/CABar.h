@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 http://9miao.com All rights reserved.
 //
 
-#ifndef __CrossAppx__CABar__
-#define __CrossAppx__CABar__
+#ifndef __CrossApp__CABar__
+#define __CrossApp__CABar__
 
 #include <iostream>
 #include "view/CAView.h"
@@ -33,7 +33,7 @@ class CC_DLL CANavigationBar
     
 public:
     
-    CREATE_FUNC(CANavigationBar);
+    static CANavigationBar* create(const DSize& size = DSizeZero);
 
 public:
     
@@ -41,7 +41,7 @@ public:
     
     virtual ~CANavigationBar();
     
-    virtual bool init();
+    virtual bool init(const DSize& size = DSizeZero);
     
     virtual void onEnterTransitionDidFinish();
     
@@ -75,11 +75,13 @@ protected:
     
     void showRightButton();
     
-    void goBack(CAControl* btn, CCPoint point);
+    void goBack(CAControl* btn, DPoint point);
     
     void updateNavigationBar();
     
 protected:
+    
+    CAView* m_pContentView;
     
     CAView* m_pTitle;
     
@@ -99,13 +101,41 @@ public:
     
 };
 
+class CC_DLL CABadgeView: public CAView
+{
+public:
+    
+    CABadgeView();
+    
+    virtual ~CABadgeView();
+    
+    bool init();
+    
+    void setBadgeText(const std::string& text);
+    
+    virtual void setContentSize(const DSize& contentSize);
+    
+protected:
+    
+    CAScale9ImageView* m_pBackground;
+    
+    CALabel* m_pTextView;
+    
+};
+
+typedef enum
+{
+    CABarVerticalAlignmentTop = 0,
+    CABarVerticalAlignmentBottom
+}CABarVerticalAlignment;
+
 class CC_DLL CATabBar
 :public CAView
 {
     
 public:
     
-    static CATabBar* create(const CAVector<CATabBarItem*>& items, const CCSize& size = CCSizeZero);
+    static CATabBar* create(const CAVector<CATabBarItem*>& items, const DSize& size = DSizeZero, const CABarVerticalAlignment& var = CABarVerticalAlignmentBottom);
     
 	void setItems(const CAVector<CATabBarItem*>& items);
     
@@ -115,7 +145,7 @@ public:
     
     virtual ~CATabBar();
 
-    virtual bool init(const CAVector<CATabBarItem*>& items, const CCSize& size = CCSizeZero);
+    virtual bool init(const CAVector<CATabBarItem*>& items, const DSize& size = DSizeZero, const CABarVerticalAlignment& var = CABarVerticalAlignmentBottom);
     
     CC_PROPERTY(CAImage*, m_pBackGroundImage, BackGroundImage);
     
@@ -137,7 +167,7 @@ public:
     
     CC_SYNTHESIZE_READONLY_PASS_BY_REF(CAVector<CATabBarItem*>, m_pItems, Items);
     
-    CC_SYNTHESIZE_READONLY_PASS_BY_REF(CADipSize, m_cItemSize, ItemSize);
+    CC_SYNTHESIZE_READONLY_PASS_BY_REF(DSize, m_cItemSize, ItemSize);
     
     CC_SYNTHESIZE_READONLY(int, m_nSelectedIndex, SelectedIndex);
     
@@ -151,7 +181,7 @@ public:
     
     void replaceItemAtIndex(size_t index, CATabBarItem* item);
     
-    const CCRect& getContentViewFrame();
+    const DRect& getContentViewFrame();
 
 protected:
     
@@ -161,11 +191,13 @@ protected:
     
     void showSelectedIndicatorView();
     
-    void setTouchSelected(CAControl* control, CCPoint point);
+    void setTouchSelected(CAControl* control, DPoint point);
 
 protected:
     
     bool m_bShowIndicator;
+    
+    CABarVerticalAlignment m_eVerticalAlignment;
     
     CATabBarItem* m_pSelectedItem;
 
@@ -176,9 +208,11 @@ protected:
     CAView* m_pSelectedIndicatorView;
     
     CAVector<CAButton*> m_pButtons;
+    
+    CAVector<CABadgeView*> m_pBadgeViews;
 };
 
 
 NS_CC_END
 
-#endif /* defined(__CrossAppx__CABar__) */
+#endif /* defined(__CrossApp__CABar__) */

@@ -7,7 +7,7 @@
 //
 
 #include "CADrawerController.h"
-#include "basics/CAScheduler.h"
+#include "animation/CAAnimation.h"
 #include "basics/CAApplication.h"
 #include "dispatcher/CATouchDispatcher.h"
 
@@ -24,13 +24,14 @@ CADrawerController::CADrawerController()
 ,m_pBackgroundView(NULL)
 {
     this->getView()->setColor(CAColor_clear);
-    this->setTouchMovedListenVertical(false);
     this->setTouchMoved(true);
+    this->setVerticalScrollEnabled(false);
 }
 
 CADrawerController::~CADrawerController()
 {
-
+    CC_SAFE_RELEASE(m_pLeftViewController);
+    CC_SAFE_RELEASE(m_pRightViewController);
 }
 
 bool CADrawerController::initWithController(CAViewController* leftViewController, CAViewController* rightViewController, float division)
@@ -87,10 +88,10 @@ CAViewController* CADrawerController::getRightViewController()
 
 void CADrawerController::viewDidLoad()
 {    
-    m_rHideFrame[0] = CCRect(-m_fDivision, 0, m_fDivision, this->getView()->getBounds().size.height);
-    m_rHideFrame[1] = CCRect(0 , 0, this->getView()->getBounds().size.width, this->getView()->getBounds().size.height);
-    m_rShowFrame[0] = CCRect(0, 0, m_fDivision, this->getView()->getBounds().size.height);
-    m_rShowFrame[1] = CCRect(m_fDivision , 0, this->getView()->getBounds().size.width, this->getView()->getBounds().size.height);
+    m_rHideFrame[0] = DRect(-m_fDivision, 0, m_fDivision, this->getView()->getBounds().size.height);
+    m_rHideFrame[1] = DRect(0 , 0, this->getView()->getBounds().size.width, this->getView()->getBounds().size.height);
+    m_rShowFrame[0] = DRect(0, 0, m_fDivision, this->getView()->getBounds().size.height);
+    m_rShowFrame[1] = DRect(m_fDivision , 0, this->getView()->getBounds().size.width, this->getView()->getBounds().size.height);
     
     
     for (int i=0; i<2; i++)
@@ -101,8 +102,8 @@ void CADrawerController::viewDidLoad()
         m_pContainer[i]->release();
     }
     
-    m_pContainer[0]->setAnchorPoint(CCPoint(1.0f, 0.5f));
-    m_pContainer[1]->setAnchorPoint(CCPoint(0.0f, 0.5f));
+    m_pContainer[0]->setAnchorPoint(DPoint(1.0f, 0.5f));
+    m_pContainer[1]->setAnchorPoint(DPoint(0.0f, 0.5f));
     
     m_pLeftViewController->addViewFromSuperview(m_pContainer[0]);
     m_pRightViewController->addViewFromSuperview(m_pContainer[1]);
@@ -152,7 +153,7 @@ void CADrawerController::reshapeViewRectDidFinish()
         m_pBackgroundView->setFrame(this->getView()->getBounds());
     }
     
-    CCRect* rect;
+    DRect* rect;
     if (m_bShow)
     {
         rect = m_rShowFrame;
@@ -189,8 +190,6 @@ void CADrawerController::showLeftViewController(bool animated)
         this->updateViewFrame();
         this->hideEnded();
     }
-    m_bSlidingMaxX = false;
-    m_bSlidingMinX = true;
 }
 
 void CADrawerController::hideLeftViewController(bool animated)
@@ -210,8 +209,6 @@ void CADrawerController::hideLeftViewController(bool animated)
         this->updateViewFrame();
         this->hideEnded();
     }
-    m_bSlidingMaxX = true;
-    m_bSlidingMinX = false;
 }
 
 bool CADrawerController::isShowLeftViewController()
@@ -237,10 +234,10 @@ void CADrawerController::hideEnded()
 
 void CADrawerController::updateViewFrame()
 {
-    CCPoint point[2] =
+    DPoint point[2] =
     {
-        CCPoint(m_fCurrDivision - m_fDivision, 0),
-        CCPoint(m_fCurrDivision, 0)
+        DPoint(m_fCurrDivision - m_fDivision, 0),
+        DPoint(m_fCurrDivision, 0)
     };
     
     if (m_bEffect3D)
@@ -248,6 +245,7 @@ void CADrawerController::updateViewFrame()
         float scale0 = 0.5f + 0.5f * m_fCurrDivision / m_fDivision;
         float scale1 = 1.0f - powf(m_fCurrDivision / m_fDivision, 2) * 0.2f;
         
+        m_pContainer[0]->setAlpha(m_fCurrDivision / m_fDivision);
         m_pContainer[0]->setScale(scale0);
         m_pContainer[1]->setScale(scale1);
         point[0].x = (point[1].x - m_pContainer[0]->getFrame().size.width) / 3;
@@ -289,9 +287,19 @@ void CADrawerController::scheduleHideAction(float dt)
     }
 }
 
-bool CADrawerController::ccTouchBegan(CATouch *pTouch, CAEvent *pEvent)
+bool CADrawerController::isReachBoundaryLeft()
 {
     return this->isShowLeftViewController();
+}
+
+bool CADrawerController::isReachBoundaryRight()
+{
+    return !this->isShowLeftViewController();
+}
+
+bool CADrawerController::ccTouchBegan(CATouch *pTouch, CAEvent *pEvent)
+{
+    return true;
 }
 
 void CADrawerController::ccTouchMoved(CATouch *pTouch, CAEvent *pEvent)
@@ -321,7 +329,7 @@ void CADrawerController::ccTouchEnded(CATouch *pTouch, CAEvent *pEvent)
     {
         this->hideLeftViewController(true);
     }
-    else if (fabsf(m_fOffX) > FLT_EPSILON)
+    else if (std::abs(m_fOffX) > FLT_EPSILON)
     {
         if (m_fOffX > 0)
         {
@@ -370,7 +378,8 @@ CAView* CADrawerController::getBackgroundView()
 
 void CADrawerController::setTouchMoved(bool var)
 {
-    m_bTouchMovedStopSubviews = m_bTouchMoved = var;
+    m_bTouchMoved = var;
+    this->setPriorityScroll(var);
 }
 
 bool CADrawerController::isTouchMoved()

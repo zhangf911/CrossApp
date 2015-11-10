@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 http://9miao.com All rights reserved.
 //
 
-#ifndef CrossAppx_CASwitch_h
-#define CrossAppx_CASwitch_h
+#ifndef CrossApp_CASwitch_h
+#define CrossApp_CASwitch_h
 
 #include "CAControl.h"
 #include "view/CAScale9ImageView.h"
@@ -26,9 +26,9 @@ public:
     
     virtual void onEnterTransitionDidFinish();
     
-    static CASwitch* createWithFrame(const CCRect& rect);
+    static CASwitch* createWithFrame(const DRect& rect);
     
-    static CASwitch* createWithCenter(const CCRect& rect);
+    static CASwitch* createWithCenter(const DRect& rect);
     
     void addTarget(CAObject* target, SEL_CAControl selector);
     
@@ -36,9 +36,9 @@ public:
     
 public:
     
-    bool initWithFrame(const CCRect& rect);
+    bool initWithFrame(const DRect& rect);
     
-    bool initWithCenter(const CCRect& rect);
+    bool initWithCenter(const DRect& rect);
     
 protected:
     bool ccTouchBegan(CATouch *pTouch, CAEvent *pEvent);
@@ -56,19 +56,21 @@ public:
     virtual void setOnImage(CAImage* onImage);
     virtual void setOffImage(CAImage* offImage);
     void setThumbTintImage(CAImage* thumbTintImage);
+    
 protected:
     void updateSwitchState(bool animated, bool callfunced);
     void updateValueChanged();
-    void setContentSize(const CCSize & var);
+    void setContentSize(const DSize & var);
     using CAControl::addTarget;
     using CAControl::removeTarget;
     
 protected:
-    CAScale9ImageView *m_onImageView;
-    CAScale9ImageView *m_offImageView;
-    CAScale9ImageView *m_thumbTintImageView;
+    
+    CAImageView *m_pOnImageView;
+    CAImageView *m_pOffImageView;
+    CAImageView *m_pThumbTintImageView;
 };
 
 NS_CC_END
 
-#endif /*defined(CrossAppx_CASwitch_h)*/
+#endif /*defined(CrossApp_CASwitch_h)*/

@@ -3,7 +3,7 @@
 //  CrossApp
 //
 //  Created by dai xinping on 14-8-4.
-//  Copyright (c) 2014年 cocos2d-x. All rights reserved.
+//  Copyright (c) 2014年 CrossApp. All rights reserved.
 //
 
 #ifndef __CrossApp__CADatePickerView__
@@ -27,17 +27,18 @@ class CADatePickerViewDelegate {
 public:
     virtual ~CADatePickerViewDelegate() {};
     
-    virtual void didSelectRow(const struct tm& tm) {CC_UNUSED_PARAM(tm);}
+    //virtual void didSelectRow(const struct tm& tm) {CC_UNUSED_PARAM(tm);}
+    virtual void didSelectRow(const struct tm& tm) {}
 };
 
 class CC_DLL CADatePickerView : public CAControl, public CAPickerViewDataSource, public CAPickerViewDelegate {
     
 public:
-    static CADatePickerView* create();
-    static CADatePickerView* createWithFrame(const CCRect& rect);
-    static CADatePickerView* createWithCenter(const CCRect& rect);
+    static CADatePickerView* create(const CADatePickerMode& m_mode);
+    static CADatePickerView* createWithFrame(const DRect& rect,const CADatePickerMode& m_mode);
+    static CADatePickerView* createWithCenter(const DRect& rect,const CADatePickerMode& m_mode);
     
-    CADatePickerView();
+    CADatePickerView(const CADatePickerMode& m_mode);
     virtual ~CADatePickerView();
     
     virtual bool init();
@@ -45,13 +46,11 @@ public:
     virtual void onExit();
     virtual void visit();
     
-    virtual bool initWithFrame(const CCRect& rect);
-    virtual bool initWithCenter(const CCRect& rect);
+    virtual bool initWithFrame(const DRect& rect);
+    virtual bool initWithCenter(const DRect& rect);
     
 public:
     void setDate(int year, int month, int day, bool animated);
-    
-    void setMode(CADatePickerMode mode);
     
     CC_SYNTHESIZE(CADatePickerViewDelegate*, m_pDelegate, Delegate);
     
@@ -60,14 +59,16 @@ protected:
     virtual unsigned int numberOfRowsInComponent(CAPickerView* pickerView, unsigned int component);
     virtual float widthForComponent(CAPickerView* pickerView, unsigned int component);
     virtual float rowHeightForComponent(CAPickerView* pickerView, unsigned int component);
-    virtual CCString* titleForRow(CAPickerView* pickerView, unsigned int row, unsigned int component);
+    virtual const char* titleForRow(CAPickerView* pickerView, unsigned int row, unsigned int component);
     
     virtual void didSelectRow(CAPickerView* pickerView, unsigned int row, unsigned int component);
+    void setMode(CADatePickerMode mode);
     
 private:
     CAPickerView* m_pPickerView;
     struct tm m_tTM;
     CADatePickerMode m_eMode;
+    bool isSetDate;
 };
 
 NS_CC_END

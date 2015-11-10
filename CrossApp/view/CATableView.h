@@ -6,15 +6,13 @@
 //  Copyright (c) 2014 http://9miao.com All rights reserved.
 //
 
-#ifndef __CrossAppx__CATableView__
-#define __CrossAppx__CATableView__
+#ifndef __CrossApp_CATableView__
+#define __CrossApp_CATableView__
 
 #include <iostream>
 #include "CAScrollView.h"
 #include <set>
 #include "basics/CASTLContainer.h"
-#include "cocoa/CCDictionary.h"
-#include "cocoa/CCArray.h"
 #include "control/CAControl.h"
 #include "basics/CAIndexPath.h"
 
@@ -42,29 +40,20 @@ public:
     virtual ~CATableViewDataSource(){};
     
     //Necessary
-    virtual CATableViewCell* tableCellAtIndex(CATableView* table, const CCSize& cellSize, unsigned int section, unsigned int row)
-    {
-        return NULL;
-    }
+    virtual CATableViewCell* tableCellAtIndex(CATableView* table, const DSize& cellSize, unsigned int section, unsigned int row) = 0;
     
     //Necessary
-    virtual unsigned int tableViewHeightForRowAtIndexPath(CATableView* table, unsigned int section, unsigned int row)
-    {
-        return 0;
-    }
+    virtual unsigned int tableViewHeightForRowAtIndexPath(CATableView* table, unsigned int section, unsigned int row) = 0;
     
     //Necessary
-    virtual unsigned int numberOfRowsInSection(CATableView *table, unsigned int section)
-    {
-        return 0;
-    }
+    virtual unsigned int numberOfRowsInSection(CATableView* table, unsigned int section) = 0;
     
-    virtual unsigned int numberOfSections(CATableView *table)
+    virtual unsigned int numberOfSections(CATableView* table)
     {
         return 1;
     }
-    
-    virtual CAView* tableViewSectionViewForHeaderInSection(CATableView* table, const CCSize& viewSize, unsigned int section)
+
+    virtual CAView* tableViewSectionViewForHeaderInSection(CATableView* table, const DSize& viewSize, unsigned int section)
     {
         return NULL;
     }
@@ -74,7 +63,7 @@ public:
         return 0;
     }
     
-    virtual CAView* tableViewSectionViewForFooterInSection(CATableView* table, const CCSize& viewSize, unsigned int section)
+    virtual CAView* tableViewSectionViewForFooterInSection(CATableView* table, const DSize& viewSize, unsigned int section)
     {
         return NULL;
     }
@@ -84,15 +73,7 @@ public:
         return 0;
     }
     
-    CC_DEPRECATED_ATTRIBUTE virtual CAView* tableViewSectionViewForHeaderInSection(CATableView* table, unsigned int section)
-    {
-        return NULL;
-    }
-    
-    CC_DEPRECATED_ATTRIBUTE virtual CAView* tableViewSectionViewForFooterInSection(CATableView* table, unsigned int section)
-    {
-        return NULL;
-    }
+    virtual void tableViewWillDisplayCellAtIndex(CATableView* table, CATableViewCell* cell, unsigned int section, unsigned int row) {};
 };
 
 
@@ -109,9 +90,9 @@ public:
     
     virtual void onExitTransitionDidStart();
 
-    static CATableView* createWithFrame(const CCRect& rect);
+    static CATableView* createWithFrame(const DRect& rect);
     
-    static CATableView* createWithCenter(const CCRect& rect);
+    static CATableView* createWithCenter(const DRect& rect);
     
     virtual bool init();
     
@@ -127,7 +108,11 @@ public:
     
     void setUnSelectRowAtIndexPath(unsigned int section, unsigned int row);
     
+    virtual void setShowsScrollIndicators(bool var);
+    
     CATableViewCell* cellForRowAtIndexPath(unsigned int section, unsigned int row);
+    
+    const CAVector<CATableViewCell*>& displayingTableCell();
     
     CC_SYNTHESIZE(CATableViewDataSource*, m_pTableViewDataSource, TableViewDataSource);
     
@@ -152,6 +137,8 @@ public:
     CC_SYNTHESIZE_IS(bool, m_bAlwaysTopSectionHeader, AlwaysTopSectionHeader);
     
     CC_SYNTHESIZE_IS(bool, m_bAlwaysBottomSectionFooter, AlwaysBottomSectionFooter);
+    
+    virtual void switchPCMode(bool var);
     
 public:
     
@@ -179,7 +166,7 @@ protected:
     
     void reloadViewSizeData();
     
-    virtual void setContentSize(const CCSize& var);
+    virtual void setContentSize(const DSize& var);
     
     virtual void update(float dt);
     
@@ -203,6 +190,10 @@ public:
     
     virtual void ccTouchCancelled(CATouch *pTouch, CAEvent *pEvent);
     
+    virtual void mouseMoved(CATouch* pTouch, CAEvent* pEvent);
+    
+    virtual void mouseMovedOutSide(CATouch* pTouch, CAEvent* pEvent);
+    
 private:
     
     using CAScrollView::setBounceHorizontal;
@@ -216,6 +207,10 @@ private:
     using CAScrollView::setShowsHorizontalScrollIndicator;
     
     using CAScrollView::isShowsHorizontalScrollIndicator;
+    
+    using CAScrollView::setShowsVerticalScrollIndicator;
+    
+    using CAScrollView::isShowsVerticalScrollIndicator;
     
     using CAScrollView::setViewSize;
     
@@ -243,8 +238,6 @@ private:
     
     using CAScrollView::getSubviewByTag;
     
-    using CAResponder::setTouchMovedListenHorizontal;
-    
 protected:
     
     unsigned int m_nSections;
@@ -259,27 +252,31 @@ protected:
     
     std::vector<std::vector<unsigned int> > m_nRowHeightss;
     
-    std::vector<CCRect> m_rSectionRects;
+    std::vector<DRect> m_rSectionRects;
     
     std::map<int, CAView*> m_pSectionHeaderViews;
     
     std::map<int, CAView*> m_pSectionFooterViews;
     
-    std::vector<std::vector<CCRect> > m_rTableCellRectss;
+    std::vector<std::vector<DRect> > m_rTableCellRectss;
 
-    std::map<CAIndexPath2E, CATableViewCell*> m_pUsedTableCells;
+    std::map<CAIndexPath2E, CATableViewCell*> m_mpUsedTableCells;
     
-    std::map<std::string, CAVector<CATableViewCell*> > m_pFreedTableCells;
+    CAVector<CATableViewCell*> m_vpUsedTableCells;
+    
+    std::map<std::string, CAVector<CATableViewCell*> > m_mpFreedTableCells;
     
     std::set<CAIndexPath2E> m_pSelectedTableCells;
     
     CATableViewCell* m_pHighlightedTableCells;
     
-    std::vector<std::vector<CCRect> > m_rLineRectss;
+    std::vector<std::vector<DRect> > m_rLineRectss;
     
     std::map<CAIndexPath2E, CAView*> m_pUsedLines;
     
     CAList<CAView*> m_pFreedLines;
+    
+    
 };
 
 class CC_DLL CATableViewCell: public CAControl
@@ -295,8 +292,10 @@ public:
     
     virtual bool initWithReuseIdentifier(const std::string& reuseIdentifier);
     
-    CC_PROPERTY(CAView*, m_pBackgroundView, BackgroundView);
+    CC_SYNTHESIZE_READONLY(CAView*, m_pContentView, ContentView);
     
+    CC_PROPERTY(CAView*, m_pBackgroundView, BackgroundView);
+
     CC_SYNTHESIZE_PASS_BY_REF(std::string, m_sReuseIdentifier, ReuseIdentifier);
     
     CC_SYNTHESIZE_READONLY(unsigned int, m_nSection, Section);
@@ -306,11 +305,7 @@ public:
     CC_SYNTHESIZE_IS(bool, m_bControlStateEffect, ControlStateEffect);
     
     CC_SYNTHESIZE_IS(bool, m_bAllowsSelected, AllowsSelected);
-    
-protected:
-    
-    CC_DEPRECATED_ATTRIBUTE virtual bool initWithReuseIdentifier(const char* reuseIdentifier);
-    
+
 protected:
 
     virtual void normalTableViewCell();
@@ -325,7 +320,7 @@ protected:
     
     void setControlState(const CAControlState& var);
     
-    void setContentSize(const CCSize& var);
+    void setContentSize(const DSize& var);
     
 private:
     
@@ -345,4 +340,4 @@ private:
 
 NS_CC_END;
 
-#endif /* defined(__CrossAppx__CATableView__) */
+#endif /* defined(__CrossApp_CATableView__) */

@@ -7,6 +7,7 @@
 //
 
 #include "CABarItem.h"
+#include "basics/CAApplication.h"
 
 NS_CC_BEGIN
 
@@ -32,6 +33,8 @@ CABarButtonItem::CABarButtonItem()
 :m_pHighlightedImage(NULL)
 ,m_pTarget(NULL)
 ,m_selCallFunc(NULL)
+,m_pCustomView(NULL)
+,m_uItemWidth(_px(80))
 {
 
 }
@@ -53,11 +56,25 @@ CABarButtonItem* CABarButtonItem::create(const std::string& title, CAImage* imag
     return NULL;
 }
 
-bool CABarButtonItem::init(const std::string& title, CAImage *image, CAImage *highlightedImage)
+bool CABarButtonItem::initWithTitle(const std::string& title, CAImage *image, CAImage *highlightedImage)
 {
     this->setTitle(title);
     this->setImage(image);
     this->setHighlightedImage(highlightedImage);
+    return true;
+}
+
+bool CABarButtonItem::initWithImage(CAImage* image, CAImage* highlightedImage)
+{
+    this->setImage(image);
+    this->setHighlightedImage(highlightedImage);
+    return true;
+}
+
+bool CABarButtonItem::initWithCustomView(CAView* customView)
+{
+    CC_SAFE_RETAIN(customView);
+    m_pCustomView = customView;
     return true;
 }
 
@@ -83,18 +100,16 @@ CANavigationBarItem::CANavigationBarItem()
 :m_pTitleViewImage(NULL)
 ,m_bShowGoBackButton(true)
 ,m_pTitleView(NULL)
+,m_bNagigationBarHidden(false)
 {
-    m_pLeftButtonItems = new CCArray(2);
-    m_pLeftButtonItems->addObject(CAView::create());
-    m_pRightButtonItems = new CCArray(2);
+    m_vLeftButtonItems.pushBack(CAView::create());
 }
 
 CANavigationBarItem::~CANavigationBarItem()
 {
     CC_SAFE_RELEASE_NULL(m_pTitleView);
     CC_SAFE_RELEASE_NULL(m_pTitleViewImage);
-    CC_SAFE_DELETE(m_pLeftButtonItems);
-    CC_SAFE_DELETE(m_pRightButtonItems);
+    m_vLeftButtonItems.clear();
 }
 
 bool CANavigationBarItem::init(const std::string& title)
@@ -118,15 +133,13 @@ CANavigationBarItem* CANavigationBarItem::create(const std::string& title)
 void CANavigationBarItem::addLeftButtonItem(CrossApp::CABarButtonItem *item)
 {
     CC_RETURN_IF(item == NULL);
-    CC_RETURN_IF(m_pLeftButtonItems->count() >= 2);
-    m_pLeftButtonItems->addObject(item);
+    m_vLeftButtonItems.pushBack(item);
 }
 
 void CANavigationBarItem::addRightButtonItem(CrossApp::CABarButtonItem *item)
 {
     CC_RETURN_IF(item == NULL);
-    CC_RETURN_IF(m_pRightButtonItems->count() >= 2);
-    m_pRightButtonItems->addObject(item);
+    m_vRightButtonItems.pushBack(item);
 }
 
 void CANavigationBarItem::setShowGoBackButton(bool var)
@@ -135,11 +148,11 @@ void CANavigationBarItem::setShowGoBackButton(bool var)
     m_bShowGoBackButton = var;
     if (m_bShowGoBackButton)
     {
-        m_pLeftButtonItems->insertObject(CAView::create(), 0);
+        m_vLeftButtonItems.insert(0, CAView::create());
     }
     else
     {
-        m_pLeftButtonItems->removeObjectAtIndex(0);
+        m_vLeftButtonItems.erase(0);
     }
 }
 

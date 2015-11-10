@@ -3,7 +3,7 @@
 //  CrossApp
 //
 //  Created by dai xinping on 14-8-15.
-//  Copyright (c) 2014年 cocos2d-x. All rights reserved.
+//  Copyright (c) 2014年 CrossApp. All rights reserved.
 //
 
 #ifndef __CrossApp__CAStepper__
@@ -14,6 +14,13 @@
 
 NS_CC_BEGIN
 
+typedef enum
+{
+    CAStepperOrientationHorizontal,
+    CAStepperOrientationVertical
+}
+CAStepperOrientation;
+
 class CAImageView;
 class CAScale9ImageView;
 class CC_DLL CAStepper : public CAControl {
@@ -23,18 +30,18 @@ public:
     virtual ~CAStepper();
 
     static CAStepper* create();
-    static CAStepper* createWithFrame(const CCRect& rect);
-    static CAStepper* createWithCenter(const CCRect& rect);
+    static CAStepper* createWithFrame(const DRect& rect);
+    static CAStepper* createWithCenter(const DRect& rect);
     
     virtual bool init();
-    virtual bool initWithFrame(const CCRect& rect);
-    virtual bool initWithCenter(const CCRect& rect);
+    virtual bool initWithFrame(const DRect& rect);
+    virtual bool initWithCenter(const DRect& rect);
     
     virtual void onEnter();
     virtual void onExit();
     
     virtual void visit();
-    
+    CC_SYNTHESIZE(CAStepperOrientation, m_pCAStepperOrientation, StepperOrientation);
     CC_SYNTHESIZE(bool, m_bContinuous, Continuous); // if true, value change events are sent any time the value changes during interaction. default = true
     CC_SYNTHESIZE(bool, m_bAutoRepeat, AutoRepeat); // if true, press & hold repeatedly alters value. default = true
     CC_SYNTHESIZE(bool, m_bWraps, Wraps);           // if true, value wraps from min <-> max. default = false
@@ -60,8 +67,11 @@ public:
     CAImage* getDecrementImageForState(CAControlState state);
     
     // an image which will be painted in between the two stepper segments. The image is selected depending both segments' state
-    void setDividerImage(CAImage* image, CAControlState state);
-    CAImage* getDividerImageForState(CAControlState state);
+    void setDividerColor(CAColor4B color);
+    CAColor4B getDividerColor();
+    
+    void setTailorImageAtIndex(int index);
+    CAView* getTailorImageAtIndex(int index);
 
     CC_SYNTHESIZE(bool, m_bTouchEffect, TouchEffect); // default is false, alpha
 
@@ -83,24 +93,27 @@ protected:
     void repeat(float dt);
     void click(CATouch* pTouch);
     void action();
-    void setContentSize(const CCSize & var);
+    void setContentSize(const DSize & var);
 private:
     CAImage* m_pBackgroundImage[CAControlStateAll];
     CAImage* m_pIncrementImage[CAControlStateAll];
     CAImage* m_pDecrementImage[CAControlStateAll];
-    CAImage* m_pDividerImage[CAControlStateAll];
     
-    CAImageView* m_pBackgroundImageView;
+    CAScale9ImageView* m_pBackgroundImageView;
+    CAImageView* m_pBackgroundSelectedImageView;
     CAImageView* m_pIncrementImageView;
     CAImageView* m_pDecrementImageView;
-    CAImageView* m_pDividerImageView;
-    
+    CAView* m_pDividerImageView;
+    CAColor4B m_cTintColor;
 private:
-    enum ActionType{
+    
+    enum ActionType
+    {
         ActionNone,
         ActionIncrease,
         ActionDecrease
     };
+    
     int m_actionType;
 };
 

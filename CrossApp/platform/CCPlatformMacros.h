@@ -28,12 +28,6 @@ static __TYPE__* create()               \
 }
 
 
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID) || (CC_TARGET_PLATFORM == CC_PLATFORM_WP8)
-    #define CC_ENABLE_CACHE_TEXTURE_DATA       1
-#else
-    #define CC_ENABLE_CACHE_TEXTURE_DATA       0
-#endif
-
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID) || (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 
     #define CC_REBIND_INDICES_BUFFER  1
@@ -160,9 +154,6 @@ public: virtual void set##funName(varType var)   \
 #define CC_BREAK_IF(cond)           if(cond) break
 #define CC_CONTINUE_IF(cond)        if(cond) continue
 
-#define __CCLOGWITHFUNCTION(s, ...) \
-    CCLog("%s : %s",__FUNCTION__, CCString::createWithFormat(s, ##__VA_ARGS__)->getCString())
-
 // CrossApp debug
 #if !defined(CROSSAPP_DEBUG) || CROSSAPP_DEBUG == 0
 #define CCLOG(...)       do {} while (0)
@@ -183,12 +174,6 @@ public: virtual void set##funName(varType var)   \
 #define CCLOGWARN(...) __CCLOGWITHFUNCTION(__VA_ARGS__)
 #endif // CROSSAPP_DEBUG
 
-// Lua engine debug
-#if !defined(CROSSAPP_DEBUG) || CROSSAPP_DEBUG == 0 || CC_LUA_ENGINE_DEBUG == 0
-#define LUALOG(...)
-#else
-#define LUALOG(format, ...)     CrossApp::CCLog(format, ##__VA_ARGS__)
-#endif // Lua engine debug
 
 #if defined(__GNUC__) && ((__GNUC__ >= 5) || ((__GNUG__ == 4) && (__GNUC_MINOR__ >= 4))) \
     || (defined(__clang__) && (__clang_major__ >= 3))

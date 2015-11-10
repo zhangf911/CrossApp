@@ -21,9 +21,10 @@ typedef enum
     CAControlEventTouchMoved,
     CAControlEventTouchMovedOutSide,
     CAControlEventTouchUpInSide,
-    CAControlEventTouchUpSide,
+    CAControlEventTouchUpOutSide,
     CAControlEventTouchValueChanged,
-    
+    CAControlEventTouchLongPress,
+    CAControlEventTouchCancelled,
     CAControlEventMax
 }CAControlEvents;
 
@@ -38,7 +39,7 @@ typedef enum
 
 class CAControl;
 
-typedef void (CAObject::*SEL_CAControl)(CAControl*, CCPoint);
+typedef void (CAObject::*SEL_CAControl)(CAControl*, DPoint);
 #define CAControl_selector(_SELECTOR) (SEL_CAControl)(&_SELECTOR)
 
 class CC_DLL CAControl: public CAView
@@ -88,4 +89,4 @@ protected:
 
 NS_CC_END
 
-#endif /* defined(__CrossAppx__CAControl__) */
+#endif /* defined(__CrossApp__CAControl__) */

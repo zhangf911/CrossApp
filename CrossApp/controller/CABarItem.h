@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 http://9miao.com All rights reserved.
 //
 
-#ifndef __CrossAppx__CABarItem__
-#define __CrossAppx__CABarItem__
+#ifndef __CrossApp__CABarItem__
+#define __CrossApp__CABarItem__
 
 #include <iostream>
 
@@ -48,9 +48,22 @@ public:
     
     virtual ~CABarButtonItem();
     
-    bool init(const std::string& title, CAImage* image, CAImage* highlightedImage);
+    bool init(const std::string& title, CAImage* image = NULL, CAImage* highlightedImage = NULL)
+    {
+        return initWithTitle(title, image, highlightedImage);
+    }
+    
+    bool initWithTitle(const std::string& title, CAImage* image = NULL, CAImage* highlightedImage = NULL);
+    
+    bool initWithImage(CAImage* image, CAImage* highlightedImage = NULL);
+    
+    bool initWithCustomView(CAView* customView);
     
     CC_SYNTHESIZE_RETAIN(CAImage*, m_pHighlightedImage, HighlightedImage);
+    
+    CC_SYNTHESIZE(unsigned int, m_uItemWidth, ItemWidth);
+    
+    CC_SYNTHESIZE_READONLY(CAView*, m_pCustomView, CustomView);
     
     void setTarget(CAObject* target, SEL_CAControl callfunc);
     
@@ -63,6 +76,7 @@ protected:
     CAObject* m_pTarget;
     
     SEL_CAControl m_selCallFunc;
+    
 };
 
 class CC_DLL CANavigationBarItem
@@ -85,15 +99,18 @@ public:
     
     void addRightButtonItem(CABarButtonItem* item);
     
+    CC_SYNTHESIZE_IS(bool, m_bNagigationBarHidden, NagigationBarHidden);
+    
     CC_SYNTHESIZE_RETAIN(CAView*, m_pTitleView, TitleView);
     
     CC_SYNTHESIZE_RETAIN(CAImage*, m_pTitleViewImage, TitleViewImage);
     
-    CC_SYNTHESIZE_READONLY(CCArray*, m_pLeftButtonItems, LeftButtonItems);
+    CC_SYNTHESIZE_READONLY_PASS_BY_REF(CAVector<CAObject*>, m_vLeftButtonItems, LeftButtonItems);
     
-    CC_SYNTHESIZE_READONLY(CCArray*, m_pRightButtonItems,RightButtonItems);
+    CC_SYNTHESIZE_READONLY_PASS_BY_REF(CAVector<CAObject*>, m_vRightButtonItems,RightButtonItems);
     
     CC_PROPERTY_IS(bool, m_bShowGoBackButton, ShowGoBackButton);
+
 };
 
 class CC_DLL CATabBarItem
@@ -114,10 +131,12 @@ public:
     
     CC_SYNTHESIZE_RETAIN(CAImage*, m_pSelectedImage, SelectedImage);
     
+    CC_SYNTHESIZE_PASS_BY_REF(std::string, m_pBadgeValue, BadgeValue);
+    
 };
 
 
 NS_CC_END
 
 
-#endif /* defined(__CrossAppx__CABarItem__) */
+#endif /* defined(__CrossApp__CABarItem__) */

@@ -30,8 +30,10 @@ class CC_DLL CAObject : public CACopying
 {
 public:
 
-    unsigned int        m_uID;
+    unsigned int        m_u__ID;
 
+    std::string         m_s__StrID;
+    
 protected:
 
     unsigned int        m_uReference;
@@ -61,6 +63,10 @@ public:
     virtual bool isEqual(const CAObject* pObject);
 
     virtual void update(float dt) {CC_UNUSED_PARAM(dt);};
+    
+    CC_SYNTHESIZE(void*, m_pUserData, UserData);
+    
+    CC_SYNTHESIZE_RETAIN(CAObject*, m_pUserObject, UserObject);
     
     CC_SYNTHESIZE(int, m_nTag, Tag);
     

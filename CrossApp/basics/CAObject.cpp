@@ -18,20 +18,29 @@ CAObject::CAObject(void)
 : m_uReference(1) // when the object is created, the reference count of it is 1
 , m_uAutoReleaseCount(0)
 , m_nTag(kCAObjectTagInvalid)
+, m_pUserData(NULL)
+, m_pUserObject(NULL)
 {
     static unsigned int uObjectCount = 0;
 
-    m_uID = ++uObjectCount;
+    m_u__ID = ++uObjectCount;
+    
+    char str[32];
+    sprintf(str, "%u", m_u__ID);
+    m_s__StrID = str;
 }
 
 CAObject::~CAObject(void)
 {
     CAScheduler::unscheduleAllForTarget(this);
     
+    CC_SAFE_RELEASE(m_pUserObject);
+    
     if (m_uAutoReleaseCount > 0)
     {
         CAPoolManager::sharedPoolManager()->removeObject(this);
     }
+    
     CCScriptEngineProtocol* pEngine = CCScriptEngineManager::sharedManager()->getScriptEngine();
     if (pEngine != NULL && pEngine->getScriptType() == kScriptTypeJavascript)
     {

@@ -14,12 +14,33 @@
 
 NS_CC_BEGIN
 
+typedef enum
+{
+    CADeviceIdiomUnknown = -1,
+    CADeviceIdiomPad = 0,
+    CADeviceIdiomPhone = 1
+}
+CADeviceIdiom;
+
+
 class CADensityDpi
 {
 public:
     
     static float getDensityDpi();
+    
+    static CADeviceIdiom getIdiom();
 };
+
+static inline float s_dip_to_px(float dip)
+{
+    return dip * (CADensityDpi::getDensityDpi() / 320.0f);
+}
+
+static inline float s_px_to_dip(float px)
+{
+    return px / (CADensityDpi::getDensityDpi() / 320.0f);
+}
 
 NS_CC_END
 

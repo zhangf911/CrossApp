@@ -3,7 +3,7 @@
 //  CrossApp
 //
 //  Created by dai xinping on 14-8-5.
-//  Copyright (c) 2014年 cocos2d-x. All rights reserved.
+//  Copyright (c) 2014年 CrossApp. All rights reserved.
 //
 
 #ifndef __CrossApp__CACalendar__
@@ -46,12 +46,12 @@ public:
     
     void dateByDayOfYear(int year, int day, int& month, int& date);
     
-private:
+public:
     bool _isLeapYear(int year);
     int _dayCountOfMonth(int year, int month);
     int _calcDayCount(tm target);
     int _compareDate(tm date1, tm date2);
-    
+    int _dayCountOfYear(int year);
 private:
     tm m_tDateTime;
 };

@@ -1,7 +1,7 @@
 
 
-#ifndef __cocos2dx__ccUTF8__
-#define __cocos2dx__ccUTF8__
+#ifndef __CrossApp__ccUTF8__
+#define __CrossApp__ccUTF8__
 
 #include "platform/CCPlatformMacros.h"
 #include <vector>
@@ -224,6 +224,9 @@ std::string inline utf8_to_url_string( const char *in )
 
 namespace StringUtils {
 
+
+CC_DLL bool UTF8ToUTF32(const std::string& utf8, std::u32string& outUtf32);
+CC_DLL bool UTF32ToUTF8(const std::u32string& utf32, std::string& outUtf8);
 /**
  *  @brief Converts utf8 string to utf16 string
  *  @param utf8 The utf8 string to be converted
@@ -405,4 +408,4 @@ CC_DEPRECATED_ATTRIBUTE CC_DLL char * cc_utf16_to_utf8 (const unsigned short  *s
 
 NS_CC_END
 
-#endif /* defined(__cocos2dx__ccUTF8__) */
+#endif /* defined(__CrossApp__ccUTF8__) */

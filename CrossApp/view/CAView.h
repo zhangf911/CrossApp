@@ -29,13 +29,10 @@
 NS_CC_BEGIN
 
 class CACamera;
-class CCPoint;
+class DPoint;
 class CATouch;
-class CCAction;
 class CARGBAProtocol;
-class CCActionManager;
 class CCComponent;
-class CCDictionary;
 class CAImage;
 class CAViewDelegate;
 class CABatchView;
@@ -58,9 +55,9 @@ typedef enum
 }
 CALayoutLinearType;
 
-#define kCAViewPointInvalid CCPoint(FLT_MIN, FLT_MIN)
-#define kCAViewSizeInvalid CCPoint(0, 0)
-#define kCAViewRectInvalid CCRect(0, 0, 0, 0)
+#define kCAViewPointInvalid DPoint(FLT_MIN, FLT_MIN)
+#define kCAViewSizeInvalid DPoint(0, 0)
+#define kCAViewRectInvalid DRect(0, 0, 0, 0)
 
 class CC_DLL CAView
 :public CAResponder
@@ -75,13 +72,13 @@ public:
 
     static CAView * create(void);
     
-    static CAView* createWithFrame(const CCRect& rect);
+    static CAView* createWithFrame(const DRect& rect);
     
-    static CAView* createWithFrame(const CCRect& rect, const CAColor4B& color4B);
+    static CAView* createWithFrame(const DRect& rect, const CAColor4B& color4B);
     
-    static CAView* createWithCenter(const CCRect& rect);
+    static CAView* createWithCenter(const DRect& rect);
     
-    static CAView* createWithCenter(const CCRect& rect, const CAColor4B& color4B);
+    static CAView* createWithCenter(const DRect& rect, const CAColor4B& color4B);
     
     static CAView* createWithColor(const CAColor4B& color4B);
     
@@ -91,13 +88,13 @@ public:
 
     virtual bool init();
 
-    virtual bool initWithFrame(const CCRect& rect);
+    virtual bool initWithFrame(const DRect& rect);
     
-    virtual bool initWithFrame(const CCRect& rect, const CAColor4B& color4B);
+    virtual bool initWithFrame(const DRect& rect, const CAColor4B& color4B);
     
-    virtual bool initWithCenter(const CCRect& rect);
+    virtual bool initWithCenter(const DRect& rect);
     
-    virtual bool initWithCenter(const CCRect& rect, const CAColor4B& color4B);
+    virtual bool initWithCenter(const DRect& rect, const CAColor4B& color4B);
     
     virtual bool initWithColor(const CAColor4B& color4B);
 
@@ -135,33 +132,33 @@ public:
 
     virtual float getSkewY();
 
-    void setAnchorPoint(const CCPoint& anchorPoint);
+    void setAnchorPoint(const DPoint& anchorPoint);
 
-    const CCPoint& getAnchorPoint();
+    const DPoint& getAnchorPoint();
 
-    void setAnchorPointInPoints(const CCPoint& anchorPointInPoints);
+    void setAnchorPointInPoints(const DPoint& anchorPointInPoints);
     
-    const CCPoint& getAnchorPointInPoints();
+    const DPoint& getAnchorPointInPoints();
     
-    virtual void setFrame(const CCRect& rect);
+    virtual void setFrame(const DRect& rect);
     
-    virtual const CCRect& getFrame() const;
+    virtual const DRect& getFrame() const;
     
-    virtual void setFrameOrigin(const CCPoint& point);
+    virtual void setFrameOrigin(const DPoint& point);
     
-    virtual const CCPoint& getFrameOrigin();
+    virtual const DPoint& getFrameOrigin();
     
-    virtual void setBounds(const CCRect& rect);
+    virtual void setCenter(const DRect& rect);
     
-    virtual CCRect getBounds() const;
+    virtual DRect getCenter();
     
-    virtual void setCenter(CCRect rect);
+    virtual void setBounds(const DRect& rect);
     
-    virtual CCRect getCenter();
+    virtual DRect getBounds() const;
+
+    virtual void setCenterOrigin(const DPoint& point);
     
-    virtual void setCenterOrigin(const CCPoint& point);
-    
-    virtual CCPoint getCenterOrigin();
+    virtual DPoint getCenterOrigin();
 
     virtual void setVisible(bool visible);
 
@@ -219,14 +216,6 @@ public:
 
     virtual void onExitTransitionDidStart();
 
-    virtual void* getUserData();
-
-    virtual void setUserData(void *pUserData);
-
-    virtual CAObject* getUserObject();
-
-    virtual void setUserObject(CAObject *pUserObject);
-
     virtual CACamera* getCamera();
 
     virtual void draw(void);
@@ -236,24 +225,6 @@ public:
     virtual CAResponder* nextResponder();
     
     virtual CAView* copy();
-    
-public:
-
-    virtual void setActionManager(CCActionManager* actionManager);
- 
-    virtual CCActionManager* getActionManager();
-    
-    CCAction* runAction(CCAction* action);
-    
-    void stopAllActions(void);
-    
-    void stopAction(CCAction* action);
-    
-    void stopActionByTag(int tag);
-    
-    CCAction* getActionByTag(int tag);
-    
-    unsigned int numberOfRunningActions(void);
     
 public:
     
@@ -271,21 +242,21 @@ public:
 
     virtual CATransformation worldToNodeTransform(void);
 
-    CCRect convertRectToNodeSpace(const CCRect& worldRect);
+    DRect convertRectToNodeSpace(const DRect& worldRect);
 
-    CCRect convertRectToWorldSpace(const CCRect& nodeRect);
+    DRect convertRectToWorldSpace(const DRect& nodeRect);
 
-    CCPoint convertToNodeSpace(const CCPoint& worldPoint);
+    DPoint convertToNodeSpace(const DPoint& worldPoint);
 
-    CCPoint convertToWorldSpace(const CCPoint& nodePoint);
+    DPoint convertToWorldSpace(const DPoint& nodePoint);
 
-    CCPoint convertToNodeSpaceAR(const CCPoint& worldPoint);
+    DPoint convertToNodeSpaceAR(const DPoint& worldPoint);
 
-    CCPoint convertToWorldSpaceAR(const CCPoint& nodePoint);
+    DPoint convertToWorldSpaceAR(const DPoint& nodePoint);
 
-    CCPoint convertTouchToNodeSpace(CATouch * touch);
+    DPoint convertTouchToNodeSpace(CATouch * touch);
 
-    CCPoint convertTouchToNodeSpaceAR(CATouch * touch);
+    DPoint convertTouchToNodeSpaceAR(CATouch * touch);
     
     virtual void setOrderOfArrival(unsigned int uOrderOfArrival);
     
@@ -343,7 +314,7 @@ public:
     
     inline void setAtlasIndex(unsigned int uAtlasIndex) { m_uAtlasIndex = uAtlasIndex; }
     
-    inline const CCRect& getImageRect(void) { return m_obRect; }
+    inline const DRect& getImageRect(void) { return m_obRect; }
     
     bool isFlipX(void);
     
@@ -366,28 +337,25 @@ public:
     virtual void ccTouchCancelled(CATouch *pTouch, CAEvent *pEvent);
     
 protected:
-
     void detachSubview(CAView *subview);
 
     void updateDraw();
 
     void updateColor(void);
     
-    virtual void setPoint(const CCPoint &point);
+    virtual void setPoint(const DPoint &point);
     
-    virtual void setContentSize(const CCSize& contentSize);
+    virtual void setContentSize(const DSize& contentSize);
     
     virtual void setImage(CAImage* image);
     
     virtual CAImage* getImage(void);
     
-    virtual void setImageRect(const CCRect& rect);
+    virtual void setImageRect(const DRect& rect);
     
-    virtual void setImageRect(const CCRect& rect, bool rotated, const CCSize& untrimmedSize);
+    virtual void setImageCoords(DRect rect);
     
-    virtual void setImageCoords(CCRect rect);
-    
-    virtual void setVertexRect(const CCRect& rect);
+    virtual void setVertexRect(const DRect& rect);
     
     virtual void setReorderChildDirtyRecursively(void);
     
@@ -398,7 +366,7 @@ protected:
     virtual void updateImageRect();
     
 protected:
-    
+
     CC_SYNTHESIZE(CAViewDelegate*, m_pViewDelegate, ViewDelegate);
     
     CC_SYNTHESIZE_IS_READONLY(bool, m_bFrame, Frame);
@@ -406,7 +374,7 @@ protected:
     CC_SYNTHESIZE_READONLY(CABatchView*, m_pobBatchView, Batch);
     
     CC_SYNTHESIZE(CAImageAtlas*, m_pobImageAtlas, ImageAtlas);
-
+    
     float m_fRotationX;                 ///< rotation angle on x-axis
     float m_fRotationY;                 ///< rotation angle on y-axis
     
@@ -415,17 +383,17 @@ protected:
     
     float m_fVertexZ;                   ///< OpenGL real Z vertex
     
-    CCPoint m_obPoint;               ///< position of the node
+    DPoint m_obPoint;               ///< position of the node
     
     float m_fSkewX;                     ///< skew angle on x-axis
     float m_fSkewY;                     ///< skew angle on y-axis
     
-    CCPoint m_obAnchorPointInPoints;    ///< anchor point in points
-    CCPoint m_obAnchorPoint;            ///< anchor point normalized (NOT in points)
+    DPoint m_obAnchorPointInPoints;    ///< anchor point in points
+    DPoint m_obAnchorPoint;            ///< anchor point normalized (NOT in points)
     
-    CCSize m_obContentSize;             ///< untransformed size of the node
+    DSize m_obContentSize;             ///< untransformed size of the node
     
-    CCRect m_obFrameRect;
+    DRect m_obFrameRect;
     
     CATransformation m_sAdditionalTransform; ///< transform
     CATransformation m_sTransform;     ///< transform
@@ -438,17 +406,11 @@ protected:
     CAVector<CAView*> m_obSubviews;               ///< array of children nodes              ///< weak reference to parent node
     CAView* m_pSuperview;
     
-    
-    void *m_pUserData;                  ///< A user assingned void pointer, Can be point to any cpp object
-    CAObject *m_pUserObject;            ///< A user assigned CAObject
-    
     CAGLProgram *m_pShaderProgram;      ///< OpenGL shader
     
     ccGLServerState m_eGLServerState;   ///< OpenGL servier side state
     
     unsigned int m_uOrderOfArrival;     ///< used to preserve sequence while sorting children with the same zOrder
-    
-    CCActionManager *m_pActionManager;  ///< a pointer to ActionManager singleton, which is used to handle all the actions
     
     bool m_bRunning;                    ///< is running
     
@@ -460,13 +422,11 @@ protected:
     bool m_bReorderChildDirty;          ///< children order dirty flag
     
     float		_displayedAlpha;
-    float     _realAlpha;
+    float       _realAlpha;
 	CAColor4B	_displayedColor;
     CAColor4B   _realColor;
     
     bool m_bDisplayRange;
-    bool m_bRestoreScissor;
-    CCRect m_obRestoreScissorRect;
 
     unsigned int        m_uAtlasIndex;          /// Absolute (real) Index on the SpriteSheet
     
@@ -478,11 +438,11 @@ protected:
     
     CATransformation   m_transformToBatch;
 
-    CCRect m_obRect;                            /// Retangle of CAImage
+    DRect m_obRect;                            /// Retangle of CAImage
     bool   m_bRectRotated;                      /// Whether the Image is rotated
     
 
-    CCPoint m_obUnflippedOffsetPositionFromCenter;
+    bool m_bIsAnimation;
     
     // vertex coords, Image coords and color info
     ccV3F_C4B_T2F_Quad m_sQuad;
@@ -504,7 +464,7 @@ public:
     
     virtual ~CAViewDelegate(){};
     
-    virtual void getSuperViewRect(const CCRect& rect) = 0;
+    virtual void getSuperViewRect(const DRect& rect) = 0;
     
     virtual void viewOnEnterTransitionDidFinish() = 0;
     

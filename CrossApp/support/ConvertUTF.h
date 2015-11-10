@@ -91,7 +91,7 @@
 #define LLVM_SUPPORT_CONVERTUTF_H
 
 #include <stddef.h>   /* ptrdiff_t */
-#include <string>
+
 /* ---------------------------------------------------------------------
     The following 4 definitions are compiler-specific.
     The C standard does not guarantee that wchar_t has at least
@@ -105,14 +105,15 @@ typedef unsigned short  UTF16;  /* at least 16 bits */
 typedef unsigned char   UTF8;   /* typically 8 bits */
 typedef unsigned char   Boolean; /* 0 or 1 */
 
-typedef unsigned short char16_t;
 
-namespace std
-{
-	typedef basic_string < char16_t, char_traits<char16_t>, allocator<char16_t> >
-		u16string;
-}
-
+//typedef UTF16 char16_t;
+//typedef UTF32 char32_t;
+//
+//namespace std
+//{
+//    typedef basic_string < char16_t, char_traits<char16_t>, allocator<char16_t> > u16string;
+//    typedef basic_string < char32_t, char_traits<char32_t>, allocator<char32_t> > u32string;
+//}
 
 /* Some fundamental constants */
 #define UNI_REPLACEMENT_CHAR (UTF32)0x0000FFFD
@@ -254,6 +255,7 @@ bool hasUTF16ByteOrderMark(const char* SrcBytes, size_t len);
  * \returns true on success
  */
 bool convertUTF16ToUTF8String(const std::u16string& utf16, std::string &Out);
+bool convertUTF32ToUTF8String(const std::u32string& utf32, std::string &Out);
 
 } /* end namespace llvm */
 

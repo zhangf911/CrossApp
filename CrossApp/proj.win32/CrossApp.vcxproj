@@ -73,8 +73,8 @@
     </PreBuildEvent>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(MSBuildProgramFiles32)\Microsoft SDKs\Windows\v7.1A\include;$(ProjectDir)..;$(ProjectDir)..\platform\win32;$(ProjectDir)..\platform\third_party\win32\iconv;$(ProjectDir)..\platform\third_party\win32\zlib;$(ProjectDir)..\platform\third_party\win32\libpng;$(ProjectDir)..\platform\third_party\win32\libjpeg;$(ProjectDir)..\platform\third_party\win32\libtiff;$(ProjectDir)..\platform\third_party\win32\libwebp;$(ProjectDir)..\platform\third_party\win32\pthread;$(ProjectDir)..\platform\third_party\win32\OGLES;$(ProjectDir)..\platform\third_party\win32\freetype;..\include;$(ProjectDir)..\kazmath\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;COCOS2DXWIN32_EXPORTS;GL_GLEXT_PROTOTYPES;COCOS2D_DEBUG=1;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(MSBuildProgramFiles32)\Microsoft SDKs\Windows\v7.1A\include;$(ProjectDir)..;$(ProjectDir)..\platform\win32;$(ProjectDir)..\the_third_party\win32\iconv;$(ProjectDir)..\the_third_party\win32\zlib;$(ProjectDir)..\the_third_party\win32\pthread;$(ProjectDir)..\the_third_party\win32\OGLES;$(ProjectDir)..\the_third_party\curl\include\win32;$(ProjectDir)..\the_third_party\png\include\win32;$(ProjectDir)..\the_third_party\jpeg\include\win32;$(ProjectDir)..\the_third_party\tiff\include\win32;$(ProjectDir)..\the_third_party\webp\include\win32;$(ProjectDir)..\the_third_party\freetype\include;$(ProjectDir)..\the_third_party\websockets\win32\include;$(ProjectDir)..\the_third_party\sdl\include;$(ProjectDir)..\the_third_party\FFmpeg\include;$(ProjectDir)..\kazmath\include;$(ProjectDir)..\support\Json;$(ProjectDir)..\support\sqlite3\include;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;COCOS2DXWIN32_EXPORTS;GL_GLEXT_PROTOTYPES;CROSSAPP_DEBUG=1;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;JSON_DLL_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -86,11 +86,19 @@
     </ClCompile>
     <PreLinkEvent>
       <Command>if not exist "$(OutDir)" mkdir "$(OutDir)"
-xcopy /Y /Q "$(ProjectDir)..\platform\third_party\win32\libraries\*.*" "$(OutDir)"
-</Command>
+xcopy /Y /Q "$(ProjectDir)..\the_third_party\win32\libraries\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)..\the_third_party\png\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)..\the_third_party\jpeg\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)..\the_third_party\tiff\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)..\the_third_party\webp\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)..\the_third_party\freetype\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)..\the_third_party\curl\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)..\the_third_party\websockets\win32\lib\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)..\the_third_party\sdl\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)..\the_third_party\FFmpeg\prebuilt\win32\*.*" "$(OutDir)"</Command>
     </PreLinkEvent>
     <Link>
-      <AdditionalDependencies>opengl32.lib;glew32.lib;libzlib.lib;libpng.lib;libjpeg.lib;libtiff.lib;libwebp.lib;libiconv.lib;pthreadVCE2.lib;freetype250.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glew32.lib;libzlib.lib;libpng.lib;libjpeg.lib;libtiff.lib;libwebp.lib;libiconv.lib;pthreadVCE2.lib;freetype260.lib;libcurl_imp.lib;websockets.lib;SDL2.lib;avcodec.lib;avformat.lib;avdevice.lib;avutil.lib;postproc.lib;swresample.lib;swscale.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
       <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -99,6 +107,9 @@ xcopy /Y /Q "$(ProjectDir)..\platform\third_party\win32\libraries\*.*" "$(OutDir
       <SubSystem>Windows</SubSystem>
       <ImportLibrary>$(TargetDir)$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalManifestDependencies>
+      </AdditionalManifestDependencies>
+      <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -111,8 +122,8 @@ xcopy /Y /Q "$(ProjectDir)..\platform\third_party\win32\libraries\*.*" "$(OutDir
       </Command>
     </PreBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(MSBuildProgramFiles32)\Microsoft SDKs\Windows\v7.1A\include;$(ProjectDir)..;$(ProjectDir)..\platform\win32;$(ProjectDir)..\platform\third_party\win32\iconv;$(ProjectDir)..\platform\third_party\win32\zlib;$(ProjectDir)..\platform\third_party\win32\libpng;$(ProjectDir)..\platform\third_party\win32\libjpeg;$(ProjectDir)..\platform\third_party\win32\libtiff;$(ProjectDir)..\platform\third_party\win32\libwebp;$(ProjectDir)..\platform\third_party\win32\pthread;$(ProjectDir)..\platform\third_party\win32\OGLES;$(ProjectDir)..\platform\third_party\win32\freetype;..\include;$(ProjectDir)..\kazmath\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;COCOS2DXWIN32_EXPORTS;GL_GLEXT_PROTOTYPES;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(MSBuildProgramFiles32)\Microsoft SDKs\Windows\v7.1A\include;$(ProjectDir)..;$(ProjectDir)..\platform\win32;$(ProjectDir)..\the_third_party\win32\iconv;$(ProjectDir)..\the_third_party\win32\zlib;$(ProjectDir)..\the_third_party\win32\pthread;$(ProjectDir)..\the_third_party\win32\OGLES;$(ProjectDir)..\the_third_party\curl\include\win32;$(ProjectDir)..\the_third_party\png\include\win32;$(ProjectDir)..\the_third_party\jpeg\include\win32;$(ProjectDir)..\the_third_party\tiff\include\win32;$(ProjectDir)..\the_third_party\webp\include\win32;$(ProjectDir)..\the_third_party\freetype\include\win32;$(ProjectDir)..\the_third_party\websockets\win32\include;$(ProjectDir)..\kazmath\include;$(ProjectDir)..\support\Json;$(ProjectDir)..\support\sqlite3\include;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;COCOS2DXWIN32_EXPORTS;GL_GLEXT_PROTOTYPES;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;JSON_DLL_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -122,11 +133,17 @@ xcopy /Y /Q "$(ProjectDir)..\platform\third_party\win32\libraries\*.*" "$(OutDir
     </ClCompile>
     <PreLinkEvent>
       <Command>if not exist "$(OutDir)" mkdir "$(OutDir)"
-xcopy /Y /Q "$(ProjectDir)..\platform\third_party\win32\libraries\*.*" "$(OutDir)"
-</Command>
+xcopy /Y /Q "$(ProjectDir)..\the_third_party\win32\libraries\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)..\the_third_party\png\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)..\the_third_party\jpeg\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)..\the_third_party\tiff\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)..\the_third_party\webp\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)..\the_third_party\freetype\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)..\the_third_party\curl\prebuilt\win32\*.*" "$(OutDir)"
+xcopy /Y /Q "$(ProjectDir)..\the_third_party\websockets\win32\lib\*.*" "$(OutDir)"</Command>
     </PreLinkEvent>
     <Link>
-      <AdditionalDependencies>opengl32.lib;glew32.lib;libzlib.lib;libpng.lib;libjpeg.lib;libtiff.lib;libwebp.lib;libiconv.lib;pthreadVCE2.lib;freetype250.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glew32.lib;libzlib.lib;libpng.lib;libjpeg.lib;libtiff.lib;libwebp.lib;libiconv.lib;pthreadVCE2.lib;freetype250.lib;libcurl_imp.lib;websockets.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
       <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries> ;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -143,6 +160,7 @@ xcopy /Y /Q "$(ProjectDir)..\platform\third_party\win32\libraries\*.*" "$(OutDir
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\animation\CAAnimation.cpp" />
     <ClCompile Include="..\animation\CAViewAnimation.cpp" />
     <ClCompile Include="..\basics\CAApplication.cpp" />
     <ClCompile Include="..\basics\CAAutoreleasePool.cpp" />
@@ -155,11 +173,8 @@ xcopy /Y /Q "$(ProjectDir)..\platform\third_party\win32\libraries\*.*" "$(OutDir
     <ClCompile Include="..\basics\CAScheduler.cpp" />
     <ClCompile Include="..\basics\CAThread.cpp" />
     <ClCompile Include="..\cocoa\CACalendar.cpp" />
-    <ClCompile Include="..\cocoa\CCArray.cpp" />
-    <ClCompile Include="..\cocoa\CCDictionary.cpp" />
     <ClCompile Include="..\cocoa\CCNS.cpp" />
     <ClCompile Include="..\cocoa\CCSet.cpp" />
-    <ClCompile Include="..\cocoa\CCString.cpp" />
     <ClCompile Include="..\controller\CABarItem.cpp" />
     <ClCompile Include="..\controller\CADrawerController.cpp" />
     <ClCompile Include="..\controller\CAViewController.cpp" />
@@ -172,41 +187,37 @@ xcopy /Y /Q "$(ProjectDir)..\platform\third_party\win32\libraries\*.*" "$(OutDir
     <ClCompile Include="..\control\CASlider.cpp" />
     <ClCompile Include="..\control\CAStepper.cpp" />
     <ClCompile Include="..\control\CASwitch.cpp" />
-    <ClCompile Include="..\control\CATextField.cpp" />
     <ClCompile Include="..\CrossApp.cpp" />
     <ClCompile Include="..\dispatcher\CAIMEDispatcher.cpp" />
     <ClCompile Include="..\dispatcher\CAKeypadDelegate.cpp" />
     <ClCompile Include="..\dispatcher\CAKeypadDispatcher.cpp" />
     <ClCompile Include="..\dispatcher\CATouch.cpp" />
     <ClCompile Include="..\dispatcher\CATouchDispatcher.cpp" />
-    <ClCompile Include="..\draw_nodes\CCDrawingPrimitives.cpp" />
-    <ClCompile Include="..\draw_nodes\CCDrawNode.cpp" />
-    <ClCompile Include="..\actions\CCAction.cpp" />
-    <ClCompile Include="..\actions\CCActionCamera.cpp" />
-    <ClCompile Include="..\actions\CCActionEase.cpp" />
-    <ClCompile Include="..\actions\CCActionInstant.cpp" />
-    <ClCompile Include="..\actions\CCActionInterval.cpp" />
-    <ClCompile Include="..\actions\CCActionManager.cpp" />
-    <ClCompile Include="..\actions\CCActionTween.cpp" />
+    <ClCompile Include="..\images\CAGif.cpp" />
     <ClCompile Include="..\images\CAImage.cpp" />
     <ClCompile Include="..\images\CAImageCache.cpp" />
+    <ClCompile Include="..\images\gif_lib\dgif_lib.c" />
+    <ClCompile Include="..\images\gif_lib\gifalloc.c" />
+    <ClCompile Include="..\images\gif_lib\gif_err.c" />
+    <ClCompile Include="..\images\gif_lib\gif_font.c" />
+    <ClCompile Include="..\images\gif_lib\gif_hash.c" />
+    <ClCompile Include="..\images\gif_lib\quantize.c" />
+    <ClCompile Include="..\platform\CAEmojiFont.cpp" />
     <ClCompile Include="..\platform\CAFreeTypeFont.cpp" />
     <ClCompile Include="..\platform\CAFTFontCache.cpp" />
     <ClCompile Include="..\platform\CATempTypeFont.cpp" />
     <ClCompile Include="..\platform\CCEGLViewProtocol.cpp" />
     <ClCompile Include="..\platform\CCFileUtils.cpp" />
-    <ClCompile Include="..\platform\CCImageCommonWebp.cpp" />
     <ClCompile Include="..\platform\CCSAXParser.cpp" />
     <ClCompile Include="..\platform\platform.cpp" />
+    <ClCompile Include="..\platform\win32\CAClipboard.cpp" />
     <ClCompile Include="..\platform\win32\CADensityDpi.cpp" />
     <ClCompile Include="..\platform\win32\CAWebViewImpl.cpp" />
     <ClCompile Include="..\platform\win32\CCAccelerometer.cpp" />
     <ClCompile Include="..\platform\win32\CCApplication.cpp" />
     <ClCompile Include="..\platform\win32\CCCommon.cpp" />
-    <ClCompile Include="..\platform\win32\CCDevice.cpp" />
     <ClCompile Include="..\platform\win32\CCEGLView.cpp" />
     <ClCompile Include="..\platform\win32\CCFileUtilsWin32.cpp" />
-    <ClCompile Include="..\platform\win32\CCImage.cpp" />
     <ClCompile Include="..\platform\win32\CCStdC.cpp" />
     <ClCompile Include="..\script_support\CCScriptSupport.cpp" />
     <ClCompile Include="..\script_support\JSViewController.cpp" />
@@ -217,14 +228,24 @@ xcopy /Y /Q "$(ProjectDir)..\platform\third_party\win32\libraries\*.*" "$(OutDir
     <ClCompile Include="..\shaders\ccShaders.cpp" />
     <ClCompile Include="..\support\base64.cpp" />
     <ClCompile Include="..\support\CANotificationCenter.cpp" />
-    <ClCompile Include="..\support\CCPointExtension.cpp" />
-    <ClCompile Include="..\support\CCProfiling.cpp" />
+    <ClCompile Include="..\support\CAPointExtension.cpp" />
+    <ClCompile Include="..\support\CAProfiling.cpp" />
     <ClCompile Include="..\support\ccUTF8.cpp" />
     <ClCompile Include="..\support\ccUtils.cpp" />
     <ClCompile Include="..\support\CCVertex.cpp" />
     <ClCompile Include="..\support\ConvertUTF.cpp" />
     <ClCompile Include="..\support\ConvertUTFWrapper.cpp" />
+    <ClCompile Include="..\support\device\CADevice.cpp" />
+    <ClCompile Include="..\support\Json\CSContentJsonDictionary.cpp" />
+    <ClCompile Include="..\support\Json\lib_json\json_reader.cpp" />
+    <ClCompile Include="..\support\Json\lib_json\json_value.cpp" />
+    <ClCompile Include="..\support\Json\lib_json\json_writer.cpp" />
+    <ClCompile Include="..\support\LocalStorage\LocalStorage.cpp" />
     <ClCompile Include="..\support\md5.cpp" />
+    <ClCompile Include="..\support\network\DownloadManager.cpp" />
+    <ClCompile Include="..\support\network\HttpClient.cpp" />
+    <ClCompile Include="..\support\network\WebSocket.cpp" />
+    <ClCompile Include="..\support\sqlite3\include\sqlite3.c" />
     <ClCompile Include="..\support\tinyxml2\tinyxml2.cpp" />
     <ClCompile Include="..\support\TransformUtils.cpp" />
     <ClCompile Include="..\support\data_support\ccCArray.cpp" />
@@ -246,12 +267,20 @@ xcopy /Y /Q "$(ProjectDir)..\platform\third_party\win32\libraries\*.*" "$(OutDir
     <ClCompile Include="..\kazmath\src\vec4.c" />
     <ClCompile Include="..\kazmath\src\GL\mat4stack.c" />
     <ClCompile Include="..\kazmath\src\GL\matrix.c" />
+    <ClCompile Include="..\video\CAVideoPlayerControlView.cpp" />
+    <ClCompile Include="..\video\CAVideoPlayerDecoder.cpp" />
+    <ClCompile Include="..\video\CAVideoPlayerRender.cpp" />
+    <ClCompile Include="..\video\CAVideoPlayerView.cpp" />
     <ClCompile Include="..\view\CAActivityIndicatorView.cpp" />
     <ClCompile Include="..\view\CAAlertView.cpp" />
+    <ClCompile Include="..\view\CAAutoCollectionView.cpp" />
     <ClCompile Include="..\view\CABatchView.cpp" />
     <ClCompile Include="..\view\CAClippingView.cpp" />
     <ClCompile Include="..\view\CACollectionView.cpp" />
     <ClCompile Include="..\view\CADatePickerView.cpp" />
+    <ClCompile Include="..\view\CADrawingPrimitives.cpp" />
+    <ClCompile Include="..\view\CADrawView.cpp" />
+    <ClCompile Include="..\view\CAGifView.cpp" />
     <ClCompile Include="..\view\CAImageView.cpp" />
     <ClCompile Include="..\view\CALabel.cpp" />
     <ClCompile Include="..\view\CALabelStyle.cpp" />
@@ -263,12 +292,15 @@ xcopy /Y /Q "$(ProjectDir)..\platform\third_party\win32\libraries\*.*" "$(OutDir
     <ClCompile Include="..\view\CAScale9ImageView.cpp" />
     <ClCompile Include="..\view\CAScrollView.cpp" />
     <ClCompile Include="..\view\CATableView.cpp" />
+    <ClCompile Include="..\view\CATextEditHelper.cpp" />
+    <ClCompile Include="..\view\CATextField.cpp" />
     <ClCompile Include="..\view\CATextView.cpp" />
     <ClCompile Include="..\view\CAView.cpp" />
     <ClCompile Include="..\view\CAWebView.cpp" />
     <ClCompile Include="..\view\CAWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\animation\CAAnimation.h" />
     <ClInclude Include="..\animation\CAViewAnimation.h" />
     <ClInclude Include="..\basics\CAApplication.h" />
     <ClInclude Include="..\basics\CAAutoreleasePool.h" />
@@ -287,11 +319,8 @@ xcopy /Y /Q "$(ProjectDir)..\platform\third_party\win32\libraries\*.*" "$(OutDir
     <ClInclude Include="..\ccTypeInfo.h" />
     <ClInclude Include="..\ccTypes.h" />
     <ClInclude Include="..\cocoa\CACalendar.h" />
-    <ClInclude Include="..\cocoa\CCArray.h" />
-    <ClInclude Include="..\cocoa\CCDictionary.h" />
     <ClInclude Include="..\cocoa\CCNS.h" />
     <ClInclude Include="..\cocoa\CCSet.h" />
-    <ClInclude Include="..\cocoa\CCString.h" />
     <ClInclude Include="..\controller\CABarItem.h" />
     <ClInclude Include="..\controller\CADrawerController.h" />
     <ClInclude Include="..\controller\CAViewController.h" />
@@ -304,7 +333,6 @@ xcopy /Y /Q "$(ProjectDir)..\platform\third_party\win32\libraries\*.*" "$(OutDir
     <ClInclude Include="..\control\CASlider.h" />
     <ClInclude Include="..\control\CAStepper.h" />
     <ClInclude Include="..\control\CASwitch.h" />
-    <ClInclude Include="..\control\CATextField.h" />
     <ClInclude Include="..\CrossApp.h" />
     <ClInclude Include="..\dispatcher\CAIMEDelegate.h" />
     <ClInclude Include="..\dispatcher\CAIMEDispatcher.h" />
@@ -313,18 +341,12 @@ xcopy /Y /Q "$(ProjectDir)..\platform\third_party\win32\libraries\*.*" "$(OutDir
     <ClInclude Include="..\dispatcher\CAProtocols.h" />
     <ClInclude Include="..\dispatcher\CATouch.h" />
     <ClInclude Include="..\dispatcher\CATouchDispatcher.h" />
-    <ClInclude Include="..\draw_nodes\CCDrawingPrimitives.h" />
-    <ClInclude Include="..\draw_nodes\CCDrawNode.h" />
-    <ClInclude Include="..\actions\CCAction.h" />
-    <ClInclude Include="..\actions\CCActionCamera.h" />
-    <ClInclude Include="..\actions\CCActionEase.h" />
-    <ClInclude Include="..\actions\CCActionInstant.h" />
-    <ClInclude Include="..\actions\CCActionInterval.h" />
-    <ClInclude Include="..\actions\CCActionManager.h" />
-    <ClInclude Include="..\actions\CCActionTween.h" />
+    <ClInclude Include="..\images\CAGif.h" />
     <ClInclude Include="..\images\CAImage.h" />
     <ClInclude Include="..\images\CAImageCache.h" />
+    <ClInclude Include="..\platform\CAClipboard.h" />
     <ClInclude Include="..\platform\CADensityDpi.h" />
+    <ClInclude Include="..\platform\CAEmojiFont.h" />
     <ClInclude Include="..\platform\CAFreeTypeFont.h" />
     <ClInclude Include="..\platform\CAFTFontCache.h" />
     <ClInclude Include="..\platform\CATempTypeFont.h" />
@@ -333,8 +355,6 @@ xcopy /Y /Q "$(ProjectDir)..\platform\third_party\win32\libraries\*.*" "$(OutDir
     <ClInclude Include="..\platform\CCCommon.h" />
     <ClInclude Include="..\platform\CCEGLViewProtocol.h" />
     <ClInclude Include="..\platform\CCFileUtils.h" />
-    <ClInclude Include="..\platform\CCImage.h" />
-    <ClInclude Include="..\platform\CCImageCommon_cpp.h" />
     <ClInclude Include="..\platform\CCPlatformConfig.h" />
     <ClInclude Include="..\platform\CCPlatformMacros.h" />
     <ClInclude Include="..\platform\CCSAXParser.h" />
@@ -372,13 +392,33 @@ xcopy /Y /Q "$(ProjectDir)..\platform\third_party\win32\libraries\*.*" "$(OutDir
     <ClInclude Include="..\shaders\ccShader_Position_uColor_vert.h" />
     <ClInclude Include="..\support\base64.h" />
     <ClInclude Include="..\support\CANotificationCenter.h" />
-    <ClInclude Include="..\support\CCPointExtension.h" />
-    <ClInclude Include="..\support\CCProfiling.h" />
+    <ClInclude Include="..\support\CAPointExtension.h" />
+    <ClInclude Include="..\support\CAProfiling.h" />
     <ClInclude Include="..\support\ccUTF8.h" />
     <ClInclude Include="..\support\ccUtils.h" />
     <ClInclude Include="..\support\CCVertex.h" />
     <ClInclude Include="..\support\ConvertUTF.h" />
+    <ClInclude Include="..\support\device\CADevice.h" />
+    <ClInclude Include="..\support\Json\CSContentJsonDictionary.h" />
+    <ClInclude Include="..\support\Json\lib_json\autolink.h" />
+    <ClInclude Include="..\support\Json\lib_json\config.h" />
+    <ClInclude Include="..\support\Json\lib_json\features.h" />
+    <ClInclude Include="..\support\Json\lib_json\forwards.h" />
+    <ClInclude Include="..\support\Json\lib_json\json_batchallocator.h" />
+    <ClInclude Include="..\support\Json\lib_json\json_lib.h" />
+    <ClInclude Include="..\support\Json\lib_json\json_tool.h" />
+    <ClInclude Include="..\support\Json\lib_json\reader.h" />
+    <ClInclude Include="..\support\Json\lib_json\value.h" />
+    <ClInclude Include="..\support\Json\lib_json\writer.h" />
+    <ClInclude Include="..\support\LocalStorage\LocalStorage.h" />
     <ClInclude Include="..\support\md5.h" />
+    <ClInclude Include="..\support\network\DownloadManager.h" />
+    <ClInclude Include="..\support\network\HttpClient.h" />
+    <ClInclude Include="..\support\network\HttpRequest.h" />
+    <ClInclude Include="..\support\network\HttpResponse.h" />
+    <ClInclude Include="..\support\network\WebSocket.h" />
+    <ClInclude Include="..\support\sqlite3\include\sqlite3.h" />
+    <ClInclude Include="..\support\sqlite3\include\sqlite3ext.h" />
     <ClInclude Include="..\support\tinyxml2\tinyxml2.h" />
     <ClInclude Include="..\support\TransformUtils.h" />
     <ClInclude Include="..\support\data_support\ccCArray.h" />
@@ -403,12 +443,20 @@ xcopy /Y /Q "$(ProjectDir)..\platform\third_party\win32\libraries\*.*" "$(OutDir
     <ClInclude Include="..\kazmath\include\kazmath\vec4.h" />
     <ClInclude Include="..\kazmath\include\kazmath\GL\mat4stack.h" />
     <ClInclude Include="..\kazmath\include\kazmath\GL\matrix.h" />
+    <ClInclude Include="..\video\CAVideoPlayerControlView.h" />
+    <ClInclude Include="..\video\CAVideoPlayerDecoder.h" />
+    <ClInclude Include="..\video\CAVideoPlayerRender.h" />
+    <ClInclude Include="..\video\CAVideoPlayerView.h" />
     <ClInclude Include="..\view\CAActivityIndicatorView.h" />
     <ClInclude Include="..\view\CAAlertView.h" />
+    <ClInclude Include="..\view\CAAutoCollectionView.h" />
     <ClInclude Include="..\view\CABatchView.h" />
     <ClInclude Include="..\view\CAClippingView.h" />
     <ClInclude Include="..\view\CACollectionView.h" />
     <ClInclude Include="..\view\CADatePickerView.h" />
+    <ClInclude Include="..\view\CADrawingPrimitives.h" />
+    <ClInclude Include="..\view\CADrawView.h" />
+    <ClInclude Include="..\view\CAGifView.h" />
     <ClInclude Include="..\view\CAImageView.h" />
     <ClInclude Include="..\view\CALabel.h" />
     <ClInclude Include="..\view\CALabelStyle.h" />
@@ -420,10 +468,21 @@ xcopy /Y /Q "$(ProjectDir)..\platform\third_party\win32\libraries\*.*" "$(OutDir
     <ClInclude Include="..\view\CAScale9ImageView.h" />
     <ClInclude Include="..\view\CAScrollView.h" />
     <ClInclude Include="..\view\CATableView.h" />
+    <ClInclude Include="..\view\CATextEditHelper.h" />
+    <ClInclude Include="..\view\CATextField.h" />
     <ClInclude Include="..\view\CATextView.h" />
     <ClInclude Include="..\view\CAView.h" />
     <ClInclude Include="..\view\CAWebView.h" />
     <ClInclude Include="..\view\CAWindow.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\support\Json\lib_json\json_internalarray.inl" />
+    <None Include="..\support\Json\lib_json\json_internalmap.inl" />
+    <None Include="..\support\Json\lib_json\json_valueiterator.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="libCrossApp.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
